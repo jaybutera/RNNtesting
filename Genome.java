@@ -35,15 +35,17 @@ public class Genome {
         // Initialize input neurons
         input_nodes  = new ArrayList<Node>();
         for (int i = 0; i < inputs; i++) {
-            input_nodes.add(new Node(NodeType.INPUT, nodeNum()));
-            nodes.add(new Node(NodeType.INPUT, nodeNum()));
+            Node n = new Node(NodeType.INPUT, nodeNum());
+            input_nodes.add(n);
+            nodes.add(n);
         }
 
         // Initialize output neurons
         output_nodes = new ArrayList<Node>();
         for (int i = 0; i < outputs; i++) {
-            output_nodes.add( new Node(NodeType.OUTPUT, nodeNum()) );
-            nodes.add( new Node(NodeType.INPUT, nodeNum()) );
+            Node n = new Node(NodeType.OUTPUT, nodeNum());
+            output_nodes.add(n);
+            nodes.add(n);
         }
 
         // Chance to make each possible link between input and output nodes
@@ -51,7 +53,7 @@ public class Genome {
         for (int i = 0; i < inputs; i++)
             for (int o = 0; o < outputs; o++)
                 if ( new Random().nextBoolean() )
-                    addConnection(i, o);
+                    addConnection(input_nodes.get(i).id, output_nodes.get(o).id);
     }
 
     // TODO: Do I need an overload with Node parameters?
