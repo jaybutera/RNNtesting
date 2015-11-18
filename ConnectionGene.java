@@ -1,7 +1,7 @@
 import java.util.Random;
 
 // Immutable
-final public class ConnectionGene {
+final public class ConnectionGene implements Comparable<ConnectionGene> {
     // All parameter inclusive
     public ConnectionGene (Node in, Node out, double weight, boolean enabled, int inv) {
         this.in      = in;
@@ -48,10 +48,15 @@ final public class ConnectionGene {
     }
 
     public String toString () {
-        return "in:      " + in.id + " (" + in.type + ")\n" +
-               "out:     " + out.id + " (" + out.type + ")\n" +
-               "weight:  " + weight + "\n" +
-               "enabled: " + enabled + "\n";
+        return "innovation: " + innovation + "\n" +
+               "in:         " + in.id + " (" + in.type + ")\n" +
+               "out:        " + out.id + " (" + out.type + ")\n" +
+               "weight:     " + weight + "\n" +
+               "enabled:    " + enabled + "\n";
+    }
+
+    public int compareTo (ConnectionGene c2) {
+        return (c2.innovation == this.innovation) ? 1 : 0;
     }
 
     public final Node in;

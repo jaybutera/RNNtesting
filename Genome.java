@@ -122,7 +122,7 @@ public class Genome {
         str += "\nOutput Node IDs:\n";
         for (Node n : output_nodes)
             str += n.id + " ";
-        str += "\n\nnConnections:\n";
+        str += "\n\nConnections:\n\n";
         for (ConnectionGene g : connections)
             str += g + "\n";
 
