@@ -9,6 +9,16 @@ public class Genome {
     public ArrayList<Node> nodes;                 // All layers of nodes concatenated
     public ArrayList<ConnectionGene> connections; // Link genes between all layers (with respect to nodes)
 
+    // Default constructor
+    public Genome () {
+        // Initialize empty lists
+        connections  = new ArrayList<ConnectionGene>();
+        nodes        = new ArrayList<Node>();
+        input_nodes  = new ArrayList<Node>();
+        hidden_nodes = new ArrayList<Node>();
+        output_nodes = new ArrayList<Node>();
+    }
+
     public Genome (ArrayList<Node> inputs,
                    ArrayList<Node> hidden,
                    ArrayList<Node> outputs,
@@ -72,6 +82,48 @@ public class Genome {
                                             innovationNum()) );
     }
 
+    public void addConnection (ConnectionGene c) {
+        // Add nodes if they don't exist
+        if (!nodes.contains(c.in))
+            nodes.add(c.in);
+        if (!nodes.contains(c.out))
+            nodes.add(c.out);
+
+        // Add input node to organized node lists
+        switch (c.in.type) {
+            case INPUT:
+                input_nodes.add(c.in);
+                break;
+            case HIDDEN:
+                hidden_nodes.add(c.in);
+                break;
+            case OUTPUT:
+                output_nodes.add(c.in);
+                break;
+        }
+
+        // Add output node to organized node lists
+        switch (c.out.type) {
+            case INPUT:
+                input_nodes.add(c.out);
+                break;
+            case HIDDEN:
+                hidden_nodes.add(c.out);
+                break;
+            case OUTPUT:
+                output_nodes.add(c.out);
+                break;
+        }
+
+        // Add connection
+        connections.add(c);
+    }
+
+    public void addConnections(ArrayList<ConnectionGene> cs) {
+        for (ConnectionGene c : cs)
+            addConnection(c);
+    }
+
     public void addNode (int n1, int n2) {
         /* * * * * */
         // Inputs  //
@@ -106,6 +158,14 @@ public class Genome {
 
     public int hiddenSize () {
         return hidden_nodes.size();
+    }
+
+    public boolean contains (ConnectionGene c) {
+        // Look for matching innovation number
+        for ( ConnectionGene cg : connections )
+            if (c.compareTo(cg) == 1)
+                return true;
+        return false;
     }
 
     // Display phenotype of genome

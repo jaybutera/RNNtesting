@@ -36,6 +36,7 @@ public abstract class GA {
     /*********************/
 
     protected ArrayList<Genome> population;
+    protected ArrayList<ConnectionGene> generation_innovs;
 
     protected double pop_size     = 100.0;
     protected double dis_rate;
@@ -56,6 +57,19 @@ public abstract class GA {
         this.link_rate         = link_rate;
     }
 
+    protected ArrayList<ConnectionGene> getMatching (Genome g1, Genome g2) {
+        // Find all matching innovation numbers
+        ArrayList<ConnectionGene> matching = new ArrayList<ConnectionGene>();
+
+        // TODO: Optimize by iterating through the smallest genome
+        for ( ConnectionGene c1 : g1.connections )
+            if ( g2.contains(c1) )
+                matching.add(c1);
+
+        return matching;
+    }
+
     abstract protected Genome crossover (Genome g1, Genome g2);
+    abstract protected int fitness (Genome g);
     abstract protected Genome mutation (Genome g);
 }
