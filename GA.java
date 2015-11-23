@@ -62,9 +62,9 @@ public abstract class GA {
         ArrayList<ConnectionGene> matching = new ArrayList<ConnectionGene>();
 
         // TODO: Optimize by iterating through the smallest genome
-        for ( ConnectionGene c1 : g1.connections )
-            if ( g2.contains(c1) )
-                matching.add(c1);
+        for ( ConnectionGene c : g1.connections )
+            if ( g2.contains(c) )
+                matching.add(c);
 
         return matching;
     }

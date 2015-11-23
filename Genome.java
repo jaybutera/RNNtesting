@@ -168,6 +168,22 @@ public class Genome {
         return false;
     }
 
+    public int numExcess (Genome g) {
+        // Start at end of genome and look backward for matching gene
+        int i = getSmallest(g).connections.size();
+        int excess = 0;
+        boolean done = false;
+
+        while (!done) {
+            if (this.connections.get(i) == g.connections.get(i))
+                done = true;
+            excess++;
+            i--;
+        }
+
+        return excess;
+    }
+
     // Display phenotype of genome
     public String toString() {
         String str = "";
@@ -202,4 +218,11 @@ public class Genome {
     }
     private int node_num = 0;
     /*******************/
+
+    private Genome getSmallest (Genome g) {
+        if (g.connections.size() < this.connections.size())
+            return g;
+        return this;
+    }
+
 }
