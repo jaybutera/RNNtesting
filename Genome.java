@@ -179,7 +179,29 @@ public class Genome {
         return g.connections.stream().filter(s -> s.innovation > max_inv).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public int numDisjoint (Genome g) {
+    public ArrayList<ConnectionGene> getDisjoint (Genome g) {
+        Genome small = getSmallest(g);
+        int max_inv = small.connections.get(small.connections.size()-1).innovation;
+        ArrayList<ConnectionGene> disjoint = new ArrayList<ConnectionGene>();
+
+        if (small != this) {
+            disjoint = small.connections.stream()
+                                        .filter(s -> !this.contains(s))
+                                        .collect(Collectors.toCollection(ArrayList::new));
+            disjoint.addAll(this.connections.stream()
+                                            .filter(s -> !this.contains(s) && s.innovation < max_inv)
+                                            .collect(Collectors.toCollection(ArrayList::new)));
+        }
+        else if (small != g) {
+            disjoint = small.connections.stream()
+                                        .filter(s -> !g.contains(s))
+                                        .collect(Collectors.toCollection(ArrayList::new));
+            disjoint.addAll(g.connections.stream()
+                                            .filter(s -> !g.contains(s) && s.innovation < max_inv)
+                                            .collect(Collectors.toCollection(ArrayList::new)));
+        }
+
+        return disjoint;
     }
 
     // Display phenotype of genome
