@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class Genome {
     // These should be private
@@ -26,13 +27,12 @@ public class Genome {
         this.input_nodes  = inputs;
         this.hidden_nodes = hidden;
         this.output_nodes = outputs;
+        this.connections  = connections;
 
         // Aggregate of all nodes in genome
         this.nodes = inputs;
         nodes.addAll(hidden);
         nodes.addAll(outputs);
-
-        this.connections  = connections;
     }
 
     // Randomly generate minimal genome (perceptron structure)
@@ -168,20 +168,18 @@ public class Genome {
         return false;
     }
 
-    public int numExcess (Genome g) {
+    public ArrayList<ConnectionGene> getExcess (Genome g) {
         // Start at end of genome and look backward for matching gene
-        int i = getSmallest(g).connections.size();
-        int excess = 0;
-        boolean done = false;
+        Genome small = getSmallest(g);
+        // Get last gene's id
+        int max_inv = small.connections.get(small.connections.size()-1).innovation;
 
-        while (!done) {
-            if (this.connections.get(i) == g.connections.get(i))
-                done = true;
-            excess++;
-            i--;
-        }
+        if (small != this)
+            return this.connections.stream().filter(s -> s.innovation > max_inv).collect(Collectors.toCollection(ArrayList::new));
+        return g.connections.stream().filter(s -> s.innovation > max_inv).collect(Collectors.toCollection(ArrayList::new));
+    }
 
-        return excess;
+    public int numDisjoint (Genome g) {
     }
 
     // Display phenotype of genome
