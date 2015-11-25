@@ -204,6 +204,14 @@ public class Genome {
         return disjoint;
     }
 
+    public ArrayList<ConnectionGene> getMatching (Genome g) {
+        // Find all matching innovation numbers
+        // TODO: Optimize by iterating through the smallest genome
+        return this.connections.stream()
+                               .filter(c -> g.contains(c))
+                               .collect(Collectors.toCollection(ArrayList::new));
+    }
+
     // Display phenotype of genome
     public String toString() {
         String str = "";
