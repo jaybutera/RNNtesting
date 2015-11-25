@@ -35,7 +35,7 @@ public abstract class GA {
     /***** protected *****/
     /*********************/
 
-    protected ArrayList<Genome> population;
+    protected Population population;
     protected ArrayList<ConnectionGene> generation_innovs;
 
     protected double pop_size     = 100.0;
@@ -55,6 +55,8 @@ public abstract class GA {
         this.inter_mating_rate = inter;
         this.node_rate         = node_rate;
         this.link_rate         = link_rate;
+
+        population = new Population(pop_size);
     }
 
     abstract protected Genome crossover (Genome g1, Genome g2);

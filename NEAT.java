@@ -10,7 +10,7 @@ public class NEAT extends GA {
         super(pop_size, dis_rate, inter_mating, node_rate, link_rate);
 
         // Initialize population
-        population = new ArrayList<Genome>(pop_size);
+        population = new Population(pop_size);
     }
 
     protected Genome crossover (Genome g1, Genome g2) {
