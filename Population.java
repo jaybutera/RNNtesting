@@ -30,8 +30,10 @@ public class Population {
         this.f = f;
 
         // Speciate all genomes in population
-        for ( Genome g : pop )
+        for ( Genome g : pop ) {
+            g.fitness = f.simulate( new Network(g) );
             speciate(g);
+        }
     }
 
     public void addGenome (Genome g) {
