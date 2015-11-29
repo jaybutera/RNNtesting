@@ -7,6 +7,7 @@ public abstract class GA {
         protected double inter_mating_rate;
         protected double node_rate;
         protected double link_rate;
+        protected Fitness f;
 
         public GAbuilder disableRate (double dis_rate) {
             this.dis_rate = dis_rate;
@@ -28,6 +29,11 @@ public abstract class GA {
             return this;
         }
 
+        public GAbuilder fitness (Fitness f) {
+            this.f = f;
+            return this;
+        }
+
         abstract public GA createGA ();
     }
 
@@ -44,11 +50,14 @@ public abstract class GA {
     protected double node_rate    = 0.0;
     protected double link_rate    = 0.0;
 
+    protected Fitness f;
+
     protected GA (int    pop_size,
                   double dis_rate,
                   double inter,
                   double node_rate,
-                  double link_rate)
+                  double link_rate,
+                  Fitness f)
     {
         this.pop_size          = pop_size;
         this.dis_rate          = dis_rate;
@@ -56,6 +65,11 @@ public abstract class GA {
         this.node_rate         = node_rate;
         this.link_rate         = link_rate;
 
-        population = new Population(pop_size);
+        population = new Population(pop_size,
+                                    dis_rate,
+                                    inter,
+                                    node_rate,
+                                    link_rate,
+                                    f);
     }
 }

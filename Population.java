@@ -18,12 +18,12 @@ public class Population {
             speciate(g);
     }
 
-    public Population (ArrayList<Genome> pop,
-                       double dis_rate,
-                       double inter_rate,
-                       double node_rate,
-                       double link_rate,
-                       Fitness f) {
+    private Population (ArrayList<Genome> pop,
+                        double dis_rate,
+                        double inter_rate,
+                        double node_rate,
+                        double link_rate,
+                        Fitness f) {
         this.pop = pop;
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
