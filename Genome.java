@@ -156,6 +156,17 @@ public class Genome {
         }
     }
 
+    public double weightDiff (Genome g) {
+        ArrayList<ConnectionGene> m = this.getMatching(g);
+
+        double avg = 0.0;
+
+        for ( ConnectionGene c : m )
+            avg += c.weight;
+
+        return avg / m.size();
+    }
+
     public int hiddenSize () {
         return hidden_nodes.size();
     }
@@ -232,6 +243,8 @@ public class Genome {
 
         return str;
     }
+
+    public double fitness;
 
     /*** Innovation number ***/
     private int innovationNum () {
