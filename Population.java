@@ -2,20 +2,22 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Population {
-    public Population (int size) {
+    public Population (int size, Fitness f) {
         pop = new ArrayList<Genome>(size);
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
+        this.f = f;
 
         // Speciate all genomes in population
         for ( Genome g : pop )
             speciate(g);
     }
 
-    public Population (ArrayList<Genome> pop) {
+    public Population (ArrayList<Genome> pop, Fitness f) {
         this.pop = pop;
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
+        this.f = f;
 
         // Speciate all genomes in population
         for ( Genome g : pop )
@@ -141,6 +143,6 @@ public class Population {
     private ArrayList<Genome> pop;
     private ArrayList<Species> species;
     private double compatThresh;
-
     private ArrayList<ConnectionGene> gen_mutations;
+    private Fitness f;
 }
