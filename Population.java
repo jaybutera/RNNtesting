@@ -5,6 +5,21 @@ public class Population {
     public Population (int size) {
         pop = new ArrayList<Genome>(size);
         species = new ArrayList<Species>();
+        gen_mutations = new ArrayList<ConnectionGene>();
+
+        // Speciate all genomes in population
+        for ( Genome g : pop )
+            speciate(g);
+    }
+
+    public Population (ArrayList<Genome> pop) {
+        this.pop = pop;
+        species = new ArrayList<Species>();
+        gen_mutations = new ArrayList<ConnectionGene>();
+
+        // Speciate all genomes in population
+        for ( Genome g : pop )
+            speciate(g);
     }
 
     public void addGenome (Genome g) {
@@ -12,7 +27,19 @@ public class Population {
         speciate(g);
     }
 
-    public void nextGen () {
+    public Population nextGen () {
+        Genome parent1 = getMostFit();
+        pop.remove(pop.indexOf(parent1));
+        Genome parent2 = getMostFit();
+
+        Genome child = crossover(parent1, parent2);
+
+        ArrayList<Genome> new_pop = new ArrayList<Genome>(pop.size()+1);
+
+        for ( Genome g : new_pop )
+            mutate(g);
+
+        return new Population(new_pop);
     }
 
     public void speciate (Genome g) {
@@ -31,6 +58,10 @@ public class Population {
         else
             species.add( new Species(g) );
     }
+
+    /***************/
+    /*   PRIVATE   */
+    /***************/
 
     private Genome crossover (Genome g1, Genome g2) {
         Genome child = new Genome();
@@ -76,13 +107,40 @@ public class Population {
         return child;
     }
 
-    private Genome mutation(Genome g) {
-        // Temporary
+    private Genome getMostFit () {
+        Genome top = pop.get(0);
 
-        return new Genome(0,0);
+        for ( Genome g : pop )
+            if (g.fitness > top.fitness)
+                top = g;
+
+        return top;
+    }
+
+    private void mutate(Genome g) {
+        double weight_rate  = .80;
+        double perturb_rate = .90;
+        double weight_val_rate = .10;
+        double disable_rate = .75;
+
+        Random r = new Random();
+
+        for (int i = 0; i < g.connections.size(); i++) {
+            if ( r.nextDouble() > weight_rate ) {
+                if ( r.nextDouble() > perturb_rate )
+                    g.addConnection();
+                if ( r.nextDouble() > weight_val_rate )
+                    g.connections.get(i).weight = r.nextDouble();
+            }
+
+            if ( r.nextDouble() > disable_rate )
+                g.connections.get(i).enabled = !g.connections.get(i).enabled;
+        }
     }
 
     private ArrayList<Genome> pop;
     private ArrayList<Species> species;
     private double compatThresh;
+
+    private ArrayList<ConnectionGene> gen_mutations;
 }

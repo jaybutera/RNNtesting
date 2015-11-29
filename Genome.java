@@ -82,6 +82,14 @@ public class Genome {
                                             innovationNum()) );
     }
 
+    // Automatic random weight at random point
+    public void addConnection () {
+        connections.add( new ConnectionGene(nodes.get(new Random().nextInt() + nodes.size()),
+                                            nodes.get(new Random().nextInt() + nodes.size()),
+                                            new Random().nextDouble(),
+                                            innovationNum()) );
+    }
+
     public void addConnection (ConnectionGene c) {
         // Add nodes if they don't exist
         if (!nodes.contains(c.in))
