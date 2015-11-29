@@ -2,7 +2,12 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Population {
-    public Population (int size, Fitness f) {
+    public Population (int size,
+                       double dis_rate,
+                       double inter_rate,
+                       double node_rate,
+                       double link_rate,
+                       Fitness f) {
         pop = new ArrayList<Genome>(size);
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
@@ -13,7 +18,12 @@ public class Population {
             speciate(g);
     }
 
-    public Population (ArrayList<Genome> pop, Fitness f) {
+    public Population (ArrayList<Genome> pop,
+                       double dis_rate,
+                       double inter_rate,
+                       double node_rate,
+                       double link_rate,
+                       Fitness f) {
         this.pop = pop;
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
@@ -41,7 +51,12 @@ public class Population {
         for ( Genome g : new_pop )
             mutate(g);
 
-        return new Population(new_pop);
+        return new Population(new_pop,
+                              dis_rate,
+                              inter_rate,
+                              node_rate,
+                              link_rate,
+                              f);
     }
 
     public void speciate (Genome g) {
@@ -121,24 +136,30 @@ public class Population {
 
     private void mutate(Genome g) {
         double weight_rate  = .80;
-        double perturb_rate = .90;
         double weight_val_rate = .10;
-        double disable_rate = .75;
 
         Random r = new Random();
 
         for (int i = 0; i < g.connections.size(); i++) {
             if ( r.nextDouble() > weight_rate ) {
-                if ( r.nextDouble() > perturb_rate )
+                if ( r.nextDouble() > link_rate )
                     g.addConnection();
+                if ( r.nextDouble() > node_rate )
+                    g.addNode();
                 if ( r.nextDouble() > weight_val_rate )
                     g.connections.get(i).weight = r.nextDouble();
             }
 
-            if ( r.nextDouble() > disable_rate )
+            if ( r.nextDouble() > dis_rate )
                 g.connections.get(i).enabled = !g.connections.get(i).enabled;
         }
     }
+
+    // Mutation parameters
+    private double dis_rate;
+    private double inter_rate;
+    private double node_rate;
+    private double link_rate;
 
     private ArrayList<Genome> pop;
     private ArrayList<Species> species;

@@ -39,10 +39,10 @@ public abstract class GA {
     protected ArrayList<ConnectionGene> generation_innovs;
 
     protected double pop_size     = 100.0;
-    protected double dis_rate;
-    protected double inter_mating_rate;
-    protected double node_rate;
-    protected double link_rate;
+    protected double dis_rate     = 0.0;
+    protected double inter_mating_rate = 0.0;
+    protected double node_rate    = 0.0;
+    protected double link_rate    = 0.0;
 
     protected GA (int    pop_size,
                   double dis_rate,
@@ -58,8 +58,4 @@ public abstract class GA {
 
         population = new Population(pop_size);
     }
-
-    abstract protected Genome crossover (Genome g1, Genome g2);
-    abstract protected int fitness (Genome g);
-    abstract protected Genome mutation (Genome g);
 }

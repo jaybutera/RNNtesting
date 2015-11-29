@@ -149,6 +149,27 @@ public class Genome {
                 connections.remove(connections.get(i));
     }
 
+    public void addNode () {
+        /* * * * * */
+        // Inputs  //
+        /* * * * * */
+
+        Random r = new Random();
+        int n1 = r.nextInt() + nodes.size();
+        int n2 = r.nextInt() + nodes.size();
+
+        nodes.add( new Node(nodeNum()) );
+        // Connect n1 to n
+        addConnection(n1, nodes.indexOf(nodes.size()-1));
+        // Connect n to n2
+        addConnection(nodes.indexOf(nodes.size()-1), n2);
+        // Disable connection from n1 to n2
+        //connections.stream().filter(c -> c.in == nodes.get(n1) && c.out == nodes.get(n2)).map(
+        for (int i = 0; i < connections.size(); i++)
+            if (connections.get(i).in == nodes.get(n1) && connections.get(i).out == nodes.get(n2))
+                connections.remove(connections.get(i));
+    }
+
     public Double getWeight (int input_id, int output_id) {
         try {
             // Find the connection gene that holds given ids
