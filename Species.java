@@ -7,6 +7,27 @@ public class Species {
 
         // Initial genome becomes the rep
         representative = seed;
+
+        // Initialize compatability parameters
+        c1 = 1.0;
+        c2 = 1.0;
+        c3 = 1.0;
+    }
+
+    public Species (final Genome seed,
+                    double c1,
+                    double c2,
+                    double c3) {
+        genomes = new ArrayList<Genome>();
+        genomes.add(seed);
+
+        // Initial genome becomes the rep
+        representative = seed;
+
+        // Initialize compatability parameters
+        this.c1 = c1;
+        this.c2 = c2;
+        this.c3 = c3;
     }
 
     public double compatibility (Genome g) {
@@ -34,4 +55,9 @@ public class Species {
 
     private ArrayList<Genome> genomes;
     private Genome representative;
+
+    // Compatibility parameters
+    private double c1;
+    private double c2;
+    private double c3;
 }
