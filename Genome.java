@@ -91,8 +91,59 @@ public class Genome {
 
     // Automatic random weight at random point
     public void addConnection () {
-        connections.add( new ConnectionGene(nodes.get(new Random().nextInt(nodes.size())),
-                                            nodes.get(new Random().nextInt(nodes.size())),
+        Random r = new Random();
+        Node n1;
+        Node n2;
+
+        System.out.println("Input size: " + input_nodes.size());
+        System.out.println("Output size: " + output_nodes.size());
+        if ( !hidden_nodes.isEmpty() ) {
+            // Prob of first node depends on size of input layer
+            if (r.nextInt() < input_nodes.size() / nodes.size()) {
+                if (input_nodes.size() == 1)
+                    n1 = input_nodes.get(0);
+                else
+                    n1 = input_nodes.get(r.nextInt(input_nodes.size()-1));
+            }
+            else {
+                if (hidden_nodes.size() == 1)
+                    n1 = hidden_nodes.get(0);
+                else
+                    n1 = hidden_nodes.get(r.nextInt(hidden_nodes.size()-1));
+            }
+        }
+        else { // If there are no hidden nodes, default input
+            if (input_nodes.size() == 1)
+                n1 = input_nodes.get(0);
+            else
+                n1 = input_nodes.get(r.nextInt(input_nodes.size()-1));
+        }
+
+
+        if ( !hidden_nodes.isEmpty() ) {
+            // Prob of second node depends on size of hidden layer
+            if (r.nextInt() < hidden_nodes.size() / nodes.size()) {
+                if (hidden_nodes.size() == 1)
+                    n2 = hidden_nodes.get(0);
+                else
+                    n2 = hidden_nodes.get(r.nextInt(hidden_nodes.size()-1));
+            }
+            else {
+                if (output_nodes.size() == 1)
+                    n2 = output_nodes.get(0);
+                else
+                    n2 = output_nodes.get(r.nextInt(output_nodes.size()-1));
+            }
+        }
+        else {
+            if (output_nodes.size() == 1)
+                n2 = output_nodes.get(0);
+            else
+                n2 = output_nodes.get(r.nextInt(output_nodes.size()));
+        }
+
+        connections.add( new ConnectionGene(n1,
+                                            n2,
                                             new Random().nextDouble(),
                                             innovationNum()) );
     }
@@ -134,7 +185,7 @@ public class Genome {
         connections.add(c);
     }
 
-    public void addConnections(ArrayList<ConnectionGene> cs) {
+    public void addConnections (ArrayList<ConnectionGene> cs) {
         for (ConnectionGene c : cs)
             addConnection(c);
     }

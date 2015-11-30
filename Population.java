@@ -20,8 +20,12 @@ public class Population {
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
         this.f = f;
+        this.dis_rate   = dis_rate;
+        this.inter_rate = inter_rate;
+        this.node_rate  = node_rate;
+        this.link_rate  = link_rate;
 
-        this.inputs = inputs;
+        this.inputs  = inputs;
         this.outputs = outputs;
 
         // Speciate all genomes in population
@@ -41,12 +45,18 @@ public class Population {
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
         this.f = f;
+        this.dis_rate   = dis_rate;
+        this.inter_rate = inter_rate;
+        this.node_rate  = node_rate;
+        this.link_rate  = link_rate;
 
         // Speciate all genomes in population
         for ( Genome g : pop ) {
             g.fitness = f.simulate( new Network(g) );
             speciate(g);
         }
+
+        //System.out.println("Top organism:\n" + new Network(getMostFit()));
     }
 
     public void addGenome (Genome g) {
@@ -54,10 +64,7 @@ public class Population {
         speciate(g);
     }
 
-    public void nextGen () {
-        ArrayList<Genome> temp_pop = pop;
-        pop.clear();
-
+    public Population nextGen () {
         Genome parent1 = getMostFit();
 
         int temp_ind = pop.indexOf(parent1);
@@ -70,11 +77,16 @@ public class Population {
 
         Genome child = crossover(parent1, parent2);
 
+        /*
+        ArrayList<Genome> temp_pop = pop;
+        pop.clear();
+        */
+
         // Initialize new population
         //ArrayList<Genome> new_pop = new ArrayList<Genome>();
 
         //for (int i = 0; i < 100; i++)
-            //new_pop.add( new Genome(inputs, outputs) );
+            //pop.add( new Genome(inputs, outputs) );
         //***
 
         for ( Genome g : pop )
@@ -82,14 +94,12 @@ public class Population {
 
         System.out.println("Initialized next generation...");
 
-        /*
         return new Population(pop,
                               dis_rate,
                               inter_rate,
                               node_rate,
                               link_rate,
                               f);
-                              */
     }
 
     public void speciate (Genome g) {
@@ -172,7 +182,7 @@ public class Population {
         return top;
     }
 
-    private void mutate(Genome g) {
+    public void mutate(Genome g) {
         double weight_rate  = .80;
         double weight_val_rate = .10;
 
@@ -180,15 +190,16 @@ public class Population {
 
         for (int i = 0; i < g.connections.size(); i++) {
             if ( r.nextDouble() > weight_rate ) {
-                if ( r.nextDouble() > link_rate )
+                System.out.println(link_rate);
+                if ( r.nextDouble() < link_rate )
                     g.addConnection();
-                if ( r.nextDouble() > node_rate )
+                if ( r.nextDouble() < node_rate )
                     g.addNode();
-                if ( r.nextDouble() > weight_val_rate )
+                if ( r.nextDouble() < weight_val_rate )
                     g.connections.get(i).weight = r.nextDouble();
             }
 
-            if ( r.nextDouble() > dis_rate )
+            if ( r.nextDouble() < dis_rate )
                 g.connections.get(i).enabled = !g.connections.get(i).enabled;
         }
     }
