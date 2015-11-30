@@ -11,6 +11,7 @@ public class Genome {
     public ArrayList<ConnectionGene> connections; // Link genes between all layers (with respect to nodes)
 
     // Default constructor
+    /*
     public Genome () {
         // Initialize empty lists
         connections  = new ArrayList<ConnectionGene>();
@@ -19,6 +20,7 @@ public class Genome {
         hidden_nodes = new ArrayList<Node>();
         output_nodes = new ArrayList<Node>();
     }
+    */
 
     public Genome (ArrayList<Node> inputs,
                    ArrayList<Node> hidden,
@@ -58,6 +60,11 @@ public class Genome {
             nodes.add(n);
         }
 
+        Random r = new Random();
+
+        // Make at least one connection
+        addConnection(input_nodes.get(r.nextInt(inputs)).id, output_nodes.get(r.nextInt(outputs)).id);
+
         // Chance to make each possible link between input and output nodes
         // with probability .5
         for (int i = 0; i < inputs; i++)
@@ -84,8 +91,8 @@ public class Genome {
 
     // Automatic random weight at random point
     public void addConnection () {
-        connections.add( new ConnectionGene(nodes.get(new Random().nextInt() + nodes.size()),
-                                            nodes.get(new Random().nextInt() + nodes.size()),
+        connections.add( new ConnectionGene(nodes.get(new Random().nextInt(nodes.size())),
+                                            nodes.get(new Random().nextInt(nodes.size())),
                                             new Random().nextDouble(),
                                             innovationNum()) );
     }
@@ -155,14 +162,15 @@ public class Genome {
         /* * * * * */
 
         Random r = new Random();
-        int n1 = r.nextInt() + nodes.size();
-        int n2 = r.nextInt() + nodes.size();
+        int n1 = r.nextInt(nodes.size());
+        int n2 = r.nextInt(nodes.size());
 
-        nodes.add( new Node(nodeNum()) );
+        Node n = new Node(nodeNum());
+        nodes.add(n);
         // Connect n1 to n
-        addConnection(n1, nodes.indexOf(nodes.size()-1));
+        addConnection(n1, nodes.indexOf(n));
         // Connect n to n2
-        addConnection(nodes.indexOf(nodes.size()-1), n2);
+        addConnection(nodes.indexOf(n), n2);
         // Disable connection from n1 to n2
         //connections.stream().filter(c -> c.in == nodes.get(n1) && c.out == nodes.get(n2)).map(
         for (int i = 0; i < connections.size(); i++)
@@ -213,6 +221,7 @@ public class Genome {
         Genome small = getSmallest(g);
         // Get last gene's id
         int max_inv = small.connections.get(small.connections.size()-1).innovation;
+        //int max_inv = small.connections.get(0).innovation;
 
         if (small != this)
             return this.connections.stream().filter(s -> s.innovation > max_inv).collect(Collectors.toCollection(ArrayList::new));
@@ -290,9 +299,10 @@ public class Genome {
     /*******************/
 
     private Genome getSmallest (Genome g) {
+        //System.out.println(g.connections.size() + "\n");
+        //System.out.println(this.connections.size());
         if (g.connections.size() < this.connections.size())
             return g;
         return this;
     }
-
 }

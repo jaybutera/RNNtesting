@@ -7,15 +7,28 @@ public class Population {
                        double inter_rate,
                        double node_rate,
                        double link_rate,
+                       int inputs,
+                       int outputs,
                        Fitness f) {
-        pop = new ArrayList<Genome>(size);
+        //pop = new ArrayList<Genome>(size);
+        // Initialize population
+        pop = new ArrayList<Genome>();
+
+        for (int i = 0; i < size; i++)
+            pop.add( new Genome(inputs, outputs) );
+
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
         this.f = f;
 
+        this.inputs = inputs;
+        this.outputs = outputs;
+
         // Speciate all genomes in population
-        for ( Genome g : pop )
+        for ( Genome g : pop ) {
+            g.fitness = f.simulate( new Network(g) );
             speciate(g);
+        }
     }
 
     private Population (ArrayList<Genome> pop,
@@ -41,38 +54,60 @@ public class Population {
         speciate(g);
     }
 
-    public Population nextGen () {
+    public void nextGen () {
+        ArrayList<Genome> temp_pop = pop;
+        pop.clear();
+
         Genome parent1 = getMostFit();
-        pop.remove(pop.indexOf(parent1));
+
+        int temp_ind = pop.indexOf(parent1);
+        Genome temp = pop.remove(temp_ind);
+
         Genome parent2 = getMostFit();
+
+        // Return first genome to population
+        pop.add(temp_ind, temp);
 
         Genome child = crossover(parent1, parent2);
 
-        ArrayList<Genome> new_pop = new ArrayList<Genome>(pop.size()+1);
+        // Initialize new population
+        //ArrayList<Genome> new_pop = new ArrayList<Genome>();
 
-        for ( Genome g : new_pop )
+        //for (int i = 0; i < 100; i++)
+            //new_pop.add( new Genome(inputs, outputs) );
+        //***
+
+        for ( Genome g : pop )
             mutate(g);
 
-        return new Population(new_pop,
+        System.out.println("Initialized next generation...");
+
+        /*
+        return new Population(pop,
                               dis_rate,
                               inter_rate,
                               node_rate,
                               link_rate,
                               f);
+                              */
     }
 
     public void speciate (Genome g) {
         double g_compat;
         int i = 0;
 
+        if (species.isEmpty())
+            species.add( new Species(g) );
+
         // Search for an appropriate species
         do {
             g_compat = species.get(i).compatibility(g);
+            i++;
         } while (g_compat > compatThresh && i < species.size());
 
         // Add genome to threshold matched species
         if (g_compat > compatThresh)
-            species.get(i).add(g);
+            species.get(i-1).add(g);
         // If no match exists, create a new species
         else
             species.add( new Species(g) );
@@ -83,7 +118,7 @@ public class Population {
     /***************/
 
     private Genome crossover (Genome g1, Genome g2) {
-        Genome child = new Genome();
+        Genome child = new Genome(inputs, outputs);
 
         // Assign all matching connection genes
         ArrayList<ConnectionGene> matching = g1.getMatching(g2);
@@ -126,12 +161,13 @@ public class Population {
         return child;
     }
 
-    private Genome getMostFit () {
+    public Genome getMostFit () {
         Genome top = pop.get(0);
 
-        for ( Genome g : pop )
+        for ( Genome g : pop ) {
             if (g.fitness > top.fitness)
                 top = g;
+        }
 
         return top;
     }
@@ -162,6 +198,10 @@ public class Population {
     private double inter_rate;
     private double node_rate;
     private double link_rate;
+
+    // Number of interface nodes in NN
+    private int inputs;
+    private int outputs;
 
     private ArrayList<Genome> pop;
     private ArrayList<Species> species;

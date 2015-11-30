@@ -198,7 +198,7 @@ public class Network {
             return out_vec;
         }
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Warning: No hidden nodes in network");
+            //System.out.println("Warning: No hidden nodes in network");
             Arrays.fill(outputNeurons, 0.0);
             return out_vec;
         }
