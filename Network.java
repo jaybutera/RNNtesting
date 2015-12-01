@@ -64,6 +64,8 @@ public class Network {
         for (int i = 0; i < output_neuron_ids.length; i++)
             for (int j = 0; j < (hidden_neuron_ids.length+input_neuron_ids.length); j++)
                 outputWeights[i][j] = g.getWeight(ih_neuron_ids[j],output_neuron_ids[i]);
+
+        System.out.println(inputWeights.length);
     }
 
     private Network (Double[][] inputWeights,

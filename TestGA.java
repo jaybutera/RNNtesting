@@ -15,11 +15,12 @@ public class TestGA {
         System.out.println(f.simulate(n));
         */
 
-        Population p = new Population(1, .8, .6, .7, .9, 2, 1, f);
+        Population p = new Population(1, .3, .6, .7, .9, 2, 1, f);
 
         p.addGenome( new Genome(3,2) );
         System.out.println(p.getMostFit());
         p.mutate(p.getMostFit());
         System.out.println(p.getMostFit());
+        System.out.println( new Network(p.getMostFit()) );
     }
 }

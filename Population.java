@@ -183,16 +183,18 @@ public class Population {
     }
 
     public void mutate(Genome g) {
-        double weight_rate  = .80;
-        double weight_val_rate = .10;
+        double weight_rate  = .20;
+        double weight_val_rate = .70;
 
         Random r = new Random();
 
         for (int i = 0; i < g.connections.size(); i++) {
-            if ( r.nextDouble() > weight_rate ) {
+            if ( r.nextDouble() < weight_rate ) {
                 if ( r.nextDouble() < link_rate )
+                    //System.out.println("Add link");
                     g.addConnection();
                 if ( r.nextDouble() < node_rate )
+                    //System.out.println("Add node");
                     g.addNode();
                 if ( r.nextDouble() < weight_val_rate )
                     g.connections.get(i).weight = r.nextDouble();

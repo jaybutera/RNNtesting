@@ -100,8 +100,6 @@ public class Genome {
         Node n1;
         Node n2;
 
-        System.out.println("Input size: " + input_nodes.size());
-        System.out.println("Output size: " + output_nodes.size());
         if ( !hidden_nodes.isEmpty() ) {
             // Prob of first node depends on size of input layer
             if (r.nextInt() < input_nodes.size() / nodes.size()) {
@@ -211,11 +209,14 @@ public class Genome {
         // Inputs  //
         /* * * * * */
 
-        nodes.add( new Node(nodeNum()) );
+        Node n = new Node( nodeNum() );
+        nodes.add(n);
+        hidden_nodes.add(n);
+
         // Connect n1 to n
-        addConnection(n1, nodes.indexOf(nodes.size()-1));
+        addConnection(n1, nodes.indexOf(n));
         // Connect n to n2
-        addConnection(nodes.indexOf(nodes.size()-1), n2);
+        addConnection(nodes.indexOf(n), n2);
         // Disable connection from n1 to n2
         //connections.stream().filter(c -> c.in == nodes.get(n1) && c.out == nodes.get(n2)).map(
         for (int i = 0; i < connections.size(); i++)
@@ -232,8 +233,13 @@ public class Genome {
         int n1 = r.nextInt(nodes.size());
         int n2 = r.nextInt(nodes.size());
 
+        addNode(n1, n2);
+        /*
         Node n = new Node(nodeNum());
         nodes.add(n);
+        hidden_nodes.add(n);
+
+        /*
         // Connect n1 to n
         addConnection(n1, nodes.indexOf(n));
         // Connect n to n2
@@ -243,6 +249,7 @@ public class Genome {
         for (int i = 0; i < connections.size(); i++)
             if (connections.get(i).in == nodes.get(n1) && connections.get(i).out == nodes.get(n2))
                 connections.remove(connections.get(i));
+                */
     }
 
     public Double getWeight (int input_id, int output_id) {
@@ -253,9 +260,11 @@ public class Genome {
                                   .map(c -> c.weight)
                                   .findFirst()
                                   .get();
+            System.out.println("Found weight from node [" + input_id + "] to [" + output_id + "] - " + w);
             return w;
         } catch (Exception e) {
             // If it doesn't exist, there is no connection
+            System.out.println("Couldn't find weight from node [" + input_id + "] to [" + output_id + "]");
             return 0.0;
         }
     }
