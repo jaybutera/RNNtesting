@@ -78,18 +78,29 @@ public class Genome {
             addConnection();
     }
 
-    // TODO: Do I need an overload with Node parameters?
+    public void addConnection (Node n1, Node n2, double weight) {
+        connections.add( new ConnectionGene(n1,
+                                            n2,
+                                            weight,
+                                            innovationNum()) );
+    }
     public void addConnection (int n1, int n2, double weight) {
-        connections.add( new ConnectionGene(nodes.get(n1),
-                                            nodes.get(n2),
+        connections.add( new ConnectionGene(getNodeById(n1),
+                                            getNodeById(n2),
                                             weight,
                                             innovationNum()) );
     }
 
     // Automatic random weight
+    public void addConnection (Node n1, Node n2) {
+        connections.add( new ConnectionGene(n1,
+                                            n2,
+                                            new Random().nextDouble(),
+                                            innovationNum()) );
+    }
     public void addConnection (int n1, int n2) {
-        connections.add( new ConnectionGene(nodes.get(n1),
-                                            nodes.get(n2),
+        connections.add( new ConnectionGene(getNodeById(n1),
+                                            getNodeById(n2),
                                             new Random().nextDouble(),
                                             innovationNum()) );
     }
@@ -204,6 +215,7 @@ public class Genome {
             addConnection(c);
     }
 
+    // Add node given two node ids
     public void addNode (int n1, int n2) {
         /* * * * * */
         // Inputs  //
@@ -214,13 +226,31 @@ public class Genome {
         hidden_nodes.add(n);
 
         // Connect n1 to n
-        addConnection(n1, nodes.indexOf(n));
+        addConnection(getNodeById(n1), n);
         // Connect n to n2
-        addConnection(nodes.indexOf(n), n2);
+        addConnection(n, getNodeById(n2));
         // Disable connection from n1 to n2
-        //connections.stream().filter(c -> c.in == nodes.get(n1) && c.out == nodes.get(n2)).map(
         for (int i = 0; i < connections.size(); i++)
-            if (connections.get(i).in == nodes.get(n1) && connections.get(i).out == nodes.get(n2))
+            if (connections.get(i).in == getNodeById(n1) && connections.get(i).out == getNodeById(n2))
+                connections.remove(connections.get(i));
+    }
+    // Add node given two nodes
+    public void addNode (Node n1, Node n2) {
+        /* * * * * */
+        // Inputs  //
+        /* * * * * */
+
+        Node n = new Node( nodeNum() );
+        nodes.add(n);
+        hidden_nodes.add(n);
+
+        // Connect n1 to n
+        addConnection(n1, n);
+        // Connect n to n2
+        addConnection(n, n2);
+        // Disable connection from n1 to n2
+        for (int i = 0; i < connections.size(); i++)
+            if (connections.get(i).in == n1 && connections.get(i).out == n2)
                 connections.remove(connections.get(i));
     }
 
@@ -229,27 +259,10 @@ public class Genome {
         // Inputs  //
         /* * * * * */
 
-        Random r = new Random();
-        int n1 = r.nextInt(nodes.size());
-        int n2 = r.nextInt(nodes.size());
+        // Choose a random connection to augment
+        ConnectionGene cg = connections.get(new Random().nextInt(connections.size()-1));
 
-        addNode(n1, n2);
-        /*
-        Node n = new Node(nodeNum());
-        nodes.add(n);
-        hidden_nodes.add(n);
-
-        /*
-        // Connect n1 to n
-        addConnection(n1, nodes.indexOf(n));
-        // Connect n to n2
-        addConnection(nodes.indexOf(n), n2);
-        // Disable connection from n1 to n2
-        //connections.stream().filter(c -> c.in == nodes.get(n1) && c.out == nodes.get(n2)).map(
-        for (int i = 0; i < connections.size(); i++)
-            if (connections.get(i).in == nodes.get(n1) && connections.get(i).out == nodes.get(n2))
-                connections.remove(connections.get(i));
-                */
+        addNode(cg.in, cg.out);
     }
 
     public Double getWeight (int input_id, int output_id) {
@@ -260,17 +273,25 @@ public class Genome {
                                   .map(c -> c.weight)
                                   .findFirst()
                                   .get();
-            System.out.println("Found weight from node [" + input_id + "] to [" + output_id + "] - " + w);
+            //System.out.println("Found weight from node [" + input_id + "] to [" + output_id + "] - " + w);
             return w;
         } catch (Exception e) {
             // If it doesn't exist, there is no connection
-            System.out.println("Couldn't find weight from node [" + input_id + "] to [" + output_id + "]");
+            //System.out.println("Couldn't find weight from node [" + input_id + "] to [" + output_id + "]");
             return 0.0;
         }
     }
 
     public double weightDiff (Genome g) {
         ArrayList<ConnectionGene> m = this.getMatching(g);
+        // Debugging
+        if (m.size() == 0) {
+            System.out.println("No matching genes between genomes:");
+            System.out.println(g);
+            System.out.println(this);
+
+            return 0.0;
+        }
 
         double avg = 0.0;
 
@@ -287,8 +308,10 @@ public class Genome {
     public boolean contains (ConnectionGene c) {
         // Look for matching innovation number
         for ( ConnectionGene cg : connections )
-            if (cg.in == c.in && cg.out == c.out)
+            if (cg.in == c.in && cg.out == c.out) {
+                //System.out.println("Matching gene found!");
                 return true;
+            }
         return false;
     }
     /*
@@ -341,9 +364,17 @@ public class Genome {
     public ArrayList<ConnectionGene> getMatching (Genome g) {
         // Find all matching innovation numbers
         // TODO: Optimize by iterating through the smallest genome
+        /*
         return this.connections.stream()
                                .filter(c -> g.contains(c))
                                .collect(Collectors.toCollection(ArrayList::new));
+                               */
+        ArrayList<ConnectionGene> matching = new ArrayList<ConnectionGene>();
+        for ( ConnectionGene c : this.connections )
+            if ( g.contains(c) )
+                matching.add(c);
+
+        return matching;
     }
 
     // Display phenotype of genome
@@ -389,5 +420,12 @@ public class Genome {
         if (g.connections.size() < this.connections.size())
             return g;
         return this;
+    }
+
+    private Node getNodeById(int id) {
+        for ( Node n : nodes )
+            if (n.id == id)
+                return n;
+        return null;
     }
 }
