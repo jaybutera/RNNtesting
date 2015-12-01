@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Iterator;
 
 public class Population {
     public Population (int size,
@@ -190,6 +189,10 @@ public class Population {
         return top;
     }
 
+    public int getNumSpecies () {
+        return species.size();
+    }
+
     public void mutate(Genome g) {
         Random r = new Random();
 
@@ -226,9 +229,6 @@ public class Population {
 
         Random r = new Random();
 
-        Iterator<Node> inps = input_layer.iterator();
-        Iterator<Node> outs = input_layer.iterator();
-
         Node inp;
         Node out;
 
@@ -258,14 +258,15 @@ public class Population {
     private double inter_rate;
     private double node_rate;
     private double link_rate;
+    private double compatThresh;
 
     // Number of interface nodes in NN
     private int inputs;
     private int outputs;
 
     private ArrayList<Genome> pop;
-    public ArrayList<Species> species;
-    private double compatThresh;
+    private ArrayList<Species> species;
     private ArrayList<ConnectionGene> gen_mutations;
     private Fitness f;
+    private Innovations inv_db;
 }
