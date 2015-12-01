@@ -67,10 +67,15 @@ public class Genome {
 
         // Chance to make each possible link between input and output nodes
         // with probability .5
+        /*
         for (int i = 0; i < inputs; i++)
             for (int o = 0; o < outputs; o++)
                 if ( new Random().nextBoolean() )
                     addConnection(input_nodes.get(i).id, output_nodes.get(o).id);
+                    */
+        int links = new Random().nextInt(inputs*outputs-1);
+        for (int i = 0; i < links; i++)
+            addConnection();
     }
 
     // TODO: Do I need an overload with Node parameters?
@@ -142,10 +147,21 @@ public class Genome {
                 n2 = output_nodes.get(r.nextInt(output_nodes.size()));
         }
 
+        ConnectionGene cg = new ConnectionGene(n1,
+                                               n2,
+                                               new Random().nextDouble(),
+                                               innovationNum());
+
+        // Need to change to try again as long as it is still possible to make
+        // a new connection (not fully connected)
+        if (!this.contains(cg))
+            connections.add(cg);
+        /*
         connections.add( new ConnectionGene(n1,
                                             n2,
                                             new Random().nextDouble(),
                                             innovationNum()) );
+        */
     }
 
     public void addConnection (ConnectionGene c) {
@@ -262,10 +278,19 @@ public class Genome {
     public boolean contains (ConnectionGene c) {
         // Look for matching innovation number
         for ( ConnectionGene cg : connections )
+            if (cg.in == c.in && cg.out == c.out)
+                return true;
+        return false;
+    }
+    /*
+    public boolean contains (ConnectionGene c) {
+        // Look for matching innovation number
+        for ( ConnectionGene cg : connections )
             if (c.compareTo(cg) == 1)
                 return true;
         return false;
     }
+    */
 
     public ArrayList<ConnectionGene> getExcess (Genome g) {
         // Start at end of genome and look backward for matching gene

@@ -190,7 +190,6 @@ public class Population {
 
         for (int i = 0; i < g.connections.size(); i++) {
             if ( r.nextDouble() > weight_rate ) {
-                System.out.println(link_rate);
                 if ( r.nextDouble() < link_rate )
                     g.addConnection();
                 if ( r.nextDouble() < node_rate )
