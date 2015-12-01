@@ -377,6 +377,13 @@ public class Genome {
         return matching;
     }
 
+    public ConnectionGene getConnection (Node in, Node out) {
+        for ( ConnectionGene cg : connections )
+            if (cg.in.id == in.id && cg.out.id == out.id)
+                return cg;
+        return null;
+    }
+
     // Display phenotype of genome
     public String toString() {
         String str = "";

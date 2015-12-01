@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Iterator;
 
 public class Population {
     public Population (int size,
@@ -7,6 +8,7 @@ public class Population {
                        double inter_rate,
                        double node_rate,
                        double link_rate,
+                       double compat_thresh,
                        int inputs,
                        int outputs,
                        Fitness f) {
@@ -24,6 +26,7 @@ public class Population {
         this.inter_rate = inter_rate;
         this.node_rate  = node_rate;
         this.link_rate  = link_rate;
+        this.compatThresh= compat_thresh;
 
         this.inputs  = inputs;
         this.outputs = outputs;
@@ -40,6 +43,7 @@ public class Population {
                         double inter_rate,
                         double node_rate,
                         double link_rate,
+                        double compat_thresh,
                         Fitness f) {
         this.pop = pop;
         species = new ArrayList<Species>();
@@ -49,6 +53,7 @@ public class Population {
         this.inter_rate = inter_rate;
         this.node_rate  = node_rate;
         this.link_rate  = link_rate;
+        this.compatThresh= compat_thresh;
 
         // Speciate all genomes in population
         for ( Genome g : pop ) {
@@ -99,6 +104,7 @@ public class Population {
                               inter_rate,
                               node_rate,
                               link_rate,
+                              compatThresh,
                               f);
     }
 
@@ -116,8 +122,10 @@ public class Population {
         } while (g_compat > compatThresh && i < species.size());
 
         // Add genome to threshold matched species
-        if (g_compat > compatThresh)
+        if (g_compat > compatThresh) {
+            System.out.println("Found a species!");
             species.get(i-1).add(g);
+        }
         // If no match exists, create a new species
         else
             species.add( new Species(g) );
@@ -183,25 +191,65 @@ public class Population {
     }
 
     public void mutate(Genome g) {
-        double weight_rate  = .20;
+        Random r = new Random();
+
         double weight_val_rate = .70;
+
+        // Mutations for input to hidden connections
+        perturbLinks(g.input_nodes, g.hidden_nodes, g);
+
+        // Mutations for hidden to hidden connections
+        perturbLinks(g.hidden_nodes, g.hidden_nodes, g);
+
+        // Mutations for hidden to output connections
+        perturbLinks(g.hidden_nodes, g.output_nodes, g);
+
+        // Mutations for input to output connections
+        perturbLinks(g.input_nodes, g.output_nodes, g);
+
+        // Mutate existing connections
+        for ( ConnectionGene cg : g.connections ) {
+            // Chance to change weight
+            if ( r.nextDouble() < weight_val_rate )
+                cg.weight = r.nextDouble();
+
+            // Chance to enable or disable (flip) connection gene
+            if ( r.nextDouble() < dis_rate )
+                cg.enabled = !cg.enabled;
+        }
+    }
+
+    private void perturbLinks (ArrayList<Node> input_layer,
+                                  ArrayList<Node> output_layer,
+                                  Genome g) {
+        double weight_rate  = .30;
 
         Random r = new Random();
 
-        for (int i = 0; i < g.connections.size(); i++) {
-            if ( r.nextDouble() < weight_rate ) {
-                if ( r.nextDouble() < link_rate )
-                    //System.out.println("Add link");
-                    g.addConnection();
-                if ( r.nextDouble() < node_rate )
-                    //System.out.println("Add node");
-                    g.addNode();
-                if ( r.nextDouble() < weight_val_rate )
-                    g.connections.get(i).weight = r.nextDouble();
-            }
+        Iterator<Node> inps = input_layer.iterator();
+        Iterator<Node> outs = input_layer.iterator();
 
-            if ( r.nextDouble() < dis_rate )
-                g.connections.get(i).enabled = !g.connections.get(i).enabled;
+        Node inp;
+        Node out;
+
+        /*
+        for ( Node inp : input_layer ) {
+            for ( Node out : output_layer ) {
+                */
+        for (int i = 0; i < input_layer.size(); i++) {
+            inp = input_layer.get(i);
+
+            for (int j = 0; j < output_layer.size(); j++) {
+                out = output_layer.get(j);
+
+                if ( r.nextDouble() < weight_rate ) {
+                    // Chance to add a connection
+                    if ( r.nextDouble() < link_rate )
+                        g.addConnection(inp, out);
+                    if ( r.nextDouble() < node_rate )
+                        g.addNode(inp, out);
+                }
+            }
         }
     }
 
@@ -216,7 +264,7 @@ public class Population {
     private int outputs;
 
     private ArrayList<Genome> pop;
-    private ArrayList<Species> species;
+    public ArrayList<Species> species;
     private double compatThresh;
     private ArrayList<ConnectionGene> gen_mutations;
     private Fitness f;
