@@ -11,9 +11,9 @@ public class Population {
                        int inputs,
                        int outputs,
                        Fitness f) {
-        //pop = new ArrayList<Genome>(size);
         // Initialize population
         pop = new ArrayList<Genome>();
+        this.inv_db = new Innovations();
 
         for (int i = 0; i < size; i++)
             pop.add( new Genome(inputs, outputs) );
@@ -43,8 +43,10 @@ public class Population {
                         double node_rate,
                         double link_rate,
                         double compat_thresh,
+                        Innovations inv_db,
                         Fitness f) {
         this.pop = pop;
+        this.inv_db = inv_db;
         species = new ArrayList<Species>();
         gen_mutations = new ArrayList<ConnectionGene>();
         this.f = f;
@@ -96,14 +98,13 @@ public class Population {
         for ( Genome g : pop )
             mutate(g);
 
-        System.out.println("Initialized next generation...");
-
         return new Population(pop,
                               dis_rate,
                               inter_rate,
                               node_rate,
                               link_rate,
                               compatThresh,
+                              inv_db,
                               f);
     }
 
@@ -121,10 +122,8 @@ public class Population {
         } while (g_compat > compatThresh && i < species.size());
 
         // Add genome to threshold matched species
-        if (g_compat > compatThresh) {
-            System.out.println("Found a species!");
+        if (g_compat > compatThresh)
             species.get(i-1).add(g);
-        }
         // If no match exists, create a new species
         else
             species.add( new Species(g) );
@@ -225,7 +224,7 @@ public class Population {
     private void perturbLinks (ArrayList<Node> input_layer,
                                   ArrayList<Node> output_layer,
                                   Genome g) {
-        double weight_rate  = .30;
+        double weight_rate  = .20;
 
         Random r = new Random();
 
@@ -244,10 +243,12 @@ public class Population {
 
                 if ( r.nextDouble() < weight_rate ) {
                     // Chance to add a connection
-                    if ( r.nextDouble() < link_rate )
-                        g.addConnection(inp, out);
+                    if ( r.nextDouble() < link_rate ) {
+                        if (inv_db == null)
+                        g.addConnection(inp, out, inv_db);
+                    }
                     if ( r.nextDouble() < node_rate )
-                        g.addNode(inp, out);
+                        g.addNode(inp, out, inv_db);
                 }
             }
         }

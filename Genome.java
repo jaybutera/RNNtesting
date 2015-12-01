@@ -92,11 +92,15 @@ public class Genome {
     }
 
     // Automatic random weight
-    public void addConnection (Node n1, Node n2) {
-        connections.add( new ConnectionGene(n1,
-                                            n2,
-                                            new Random().nextDouble(),
-                                            innovationNum()) );
+    public void addConnection (Node n1, Node n2, Innovations inv_db) {
+        double weight = new Random().nextDouble();
+
+        ConnectionGene cg = new ConnectionGene(n1,
+                                               n2,
+                                               weight,
+                                               0 ); // Innovation is modified by Innovations (inv_db)
+        inv_db.addInnovation(cg);
+        connections.add(cg);
     }
     public void addConnection (int n1, int n2) {
         connections.add( new ConnectionGene(getNodeById(n1),
@@ -216,7 +220,7 @@ public class Genome {
     }
 
     // Add node given two node ids
-    public void addNode (int n1, int n2) {
+    public void addNode (int n1, int n2, Innovations inv_db) {
         /* * * * * */
         // Inputs  //
         /* * * * * */
@@ -226,16 +230,16 @@ public class Genome {
         hidden_nodes.add(n);
 
         // Connect n1 to n
-        addConnection(getNodeById(n1), n);
+        addConnection(getNodeById(n1), n, inv_db);
         // Connect n to n2
-        addConnection(n, getNodeById(n2));
+        addConnection(n, getNodeById(n2), inv_db);
         // Disable connection from n1 to n2
         for (int i = 0; i < connections.size(); i++)
             if (connections.get(i).in == getNodeById(n1) && connections.get(i).out == getNodeById(n2))
                 connections.remove(connections.get(i));
     }
     // Add node given two nodes
-    public void addNode (Node n1, Node n2) {
+    public void addNode (Node n1, Node n2, Innovations inv_db) {
         /* * * * * */
         // Inputs  //
         /* * * * * */
@@ -245,16 +249,16 @@ public class Genome {
         hidden_nodes.add(n);
 
         // Connect n1 to n
-        addConnection(n1, n);
+        addConnection(n1, n, inv_db);
         // Connect n to n2
-        addConnection(n, n2);
+        addConnection(n, n2, inv_db);
         // Disable connection from n1 to n2
         for (int i = 0; i < connections.size(); i++)
             if (connections.get(i).in == n1 && connections.get(i).out == n2)
                 connections.remove(connections.get(i));
     }
 
-    public void addNode () {
+    public void addNode (Innovations inv_db) {
         /* * * * * */
         // Inputs  //
         /* * * * * */
@@ -262,7 +266,7 @@ public class Genome {
         // Choose a random connection to augment
         ConnectionGene cg = connections.get(new Random().nextInt(connections.size()-1));
 
-        addNode(cg.in, cg.out);
+        addNode(cg.in, cg.out, inv_db);
     }
 
     public Double getWeight (int input_id, int output_id) {
@@ -286,9 +290,11 @@ public class Genome {
         ArrayList<ConnectionGene> m = this.getMatching(g);
         // Debugging
         if (m.size() == 0) {
+            /*
             System.out.println("No matching genes between genomes:");
             System.out.println(g);
             System.out.println(this);
+            */
 
             return 0.0;
         }

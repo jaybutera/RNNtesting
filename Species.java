@@ -47,10 +47,12 @@ public class Species {
         double x =   (c1 * g.getExcess(representative).size()) / N
                    + (c2 * g.getDisjoint(representative).size()) / N
                    +  c3 * g.weightDiff(representative);
+        /*
         System.out.println("Excess size: " + g.getExcess(representative).size());
         System.out.println("Disjoint size: " + g.getDisjoint(representative).size());
         System.out.println("Weight diff: " + g.weightDiff(representative));
         System.out.println("Compatibility of : " + x);
+        */
         return x;
     }
 

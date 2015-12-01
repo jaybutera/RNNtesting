@@ -12,20 +12,42 @@ public class Innovations {
     // Add node innovation
     public boolean addInnovation (ConnectionGene c1, ConnectionGene c2) {
         // If innovation is novel, add to database
-        if (checkInnovation(c1, c2) == -1)
-            nodes.add( new NodeInv(NodeInvNum(), c1, c2) );
-        else
+        int inv_id = checkInnovation(c1, c2);
+        if ( inv_id == -1) {
+            c1.innovation = connGeneNum();
+            c2.innovation = connGeneNum();
+            nodes.add( new NodeInv(nodeInvNum(), c1, c2) );
+        }
+        else {
+            // Assign connection ids to existing innovation ids
+            NodeInv n = getNodeInvById(inv_id);
+            c1.innovation = n.c_in.innovation;
+            c2.innovation = n.c_out.innovation;
+
             return false;
+        }
+
+        // New innovation
         return true;
     }
 
     // Add connection innovation
     public boolean addInnovation (ConnectionGene c) {
         // If innovation is novel, add to database
-        if (checkInnovation(c) == -1)
-            connections.add( new ConnectionInv(NodeInvNum(), c) );
-        else
+        int inv_id = checkInnovation(c);
+        if (inv_id == -1) {
+            c.innovation = connGeneNum();
+            connections.add( new ConnectionInv(nodeInvNum(), c) );
+        }
+        else {
+            // Assign connection id to existing innovation id
+            ConnectionInv ci = getConnectionInvById(inv_id);
+            c.innovation = ci.c.innovation;
+
             return false;
+        }
+
+        // New innovation
         return true;
     }
 
@@ -51,15 +73,75 @@ public class Innovations {
         return -1;
     }
 
+    // Check innovations for both connection (choice = 0) and node (choice = 1)
+    // TODO: This is a terrible design, and definitely temporary.
+    public int checkInnovation (Node c_in, Node c_out, int choice) {
+        if (choice == 0) {
+            // Look for a connection innovation with matching in and out node ids
+            for ( ConnectionInv ci : connections )
+                if (c_in.id == ci.c.in.id && c_out.id == ci.c.out.id)
+                    return ci.id;
+        }
+        else if (choice == 1) {
+            // Look for a node innovation with matching in and out node ids
+            for ( NodeInv ni : nodes )
+                if (c_in.id == ni.c_in.in.id && c_out.id == ni.c_out.out.id)
+                    return ni.id;
+        }
+
+        // Innovation doesn't exist
+        return -1;
+    }
+
+    /*
+    // Get id of input connection for existing innovation
+    public int getInId(int node_id) {
+        for ( NodeInv ni : nodes )
+            if (ni.id == node_id)
+                return ni.id_in;
+
+        // Node innovation doesn't exist
+        return -1;
+    }
+
+    // Get id of output connection for existing innovation
+    public int getOutId(int node_id) {
+        for ( NodeInv ni : nodes )
+            if (ni.id == node_id)
+                return ni.id_out;
+
+        // Node innovation doesn't exist
+        return -1;
+    }
+    */
+
+    private NodeInv getNodeInvById (int id) {
+        for ( NodeInv n : nodes )
+            if (n.id == id)
+                return n;
+        return null;
+    }
+
+    private ConnectionInv getConnectionInvById (int id) {
+        for ( ConnectionInv c : connections )
+            if (c.id == id)
+                return c;
+        return null;
+    }
 
     // Global innovation number incrementers
     /************************************ */
-    private int NodeInvNum () {
+    // TODO: These should be private
+    private int nodeInvNum () {
         return nextNodeId++;
     }
 
-    private int ConnInvNum () {
+    private int connInvNum () {
         return nextConnId++;
+    }
+
+    private int connGeneNum () {
+        return connGeneId++;
     }
     /************************************ */
 
@@ -68,6 +150,7 @@ public class Innovations {
 
     private int nextConnId;
     private int nextNodeId;
+    private int connGeneId;
 
     /********************************/
     // Container innovation classes //
@@ -88,19 +171,11 @@ public class Innovations {
             this.c_in   = c1;
             this.c_out  = c2;
             this.id     = id;
-            /*
-            this.id_in  = id1;
-            this.id_out = id2;
-            */
         }
 
         final public ConnectionGene c_in;
         final public ConnectionGene c_out;
-        final public int id;
-        /*
-        final public int id_in;
-        final public int id_out;
-        */
+        final public int id; // Node id
     }
 
     /********************************/

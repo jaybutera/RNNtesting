@@ -64,5 +64,5 @@ final public class ConnectionGene implements Comparable<ConnectionGene> {
 
     public double weight;
     public boolean enabled;
-    public final int innovation;
+    public int innovation;
 }
