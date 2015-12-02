@@ -78,6 +78,7 @@ public class Genome {
             addConnection();
     }
 
+    // Manually defined weight
     public void addConnection (Node n1, Node n2, double weight) {
         connections.add( new ConnectionGene(n1,
                                             n2,
@@ -92,7 +93,7 @@ public class Genome {
     }
 
     // Automatic random weight
-    public void addConnection (Node n1, Node n2, Innovations inv_db) {
+    public ConnectionGene addConnection (Node n1, Node n2, Innovations inv_db) {
         double weight = new Random().nextDouble();
 
         ConnectionGene cg = new ConnectionGene(n1,
@@ -101,6 +102,8 @@ public class Genome {
                                                0 ); // Innovation is modified by Innovations (inv_db)
         inv_db.addInnovation(cg);
         connections.add(cg);
+
+        return cg;
     }
     public void addConnection (int n1, int n2) {
         connections.add( new ConnectionGene(getNodeById(n1),
@@ -239,23 +242,29 @@ public class Genome {
                 connections.remove(connections.get(i));
     }
     // Add node given two nodes
-    public void addNode (Node n1, Node n2, Innovations inv_db) {
+    public Node addNode (Node n1, Node n2, Innovations inv_db) {
         /* * * * * */
         // Inputs  //
         /* * * * * */
 
-        Node n = new Node( nodeNum() );
-        nodes.add(n);
-        hidden_nodes.add(n);
+        Node n = new Node(0);
 
         // Connect n1 to n
-        addConnection(n1, n, inv_db);
+        ConnectionGene c1 = addConnection(n1, n, inv_db);
         // Connect n to n2
-        addConnection(n, n2, inv_db);
+        ConnectionGene c2 = addConnection(n, n2, inv_db);
         // Disable connection from n1 to n2
         for (int i = 0; i < connections.size(); i++)
             if (connections.get(i).in == n1 && connections.get(i).out == n2)
                 connections.remove(connections.get(i));
+
+        // Add to innovation database and update node id
+        inv_db.addInnovation(c1, c2);
+        // Add to local genome database
+        nodes.add(n);
+        hidden_nodes.add(n);
+
+        return n;
     }
 
     public void addNode (Innovations inv_db) {
