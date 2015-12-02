@@ -57,12 +57,13 @@ public class Population {
         this.compatThresh= compat_thresh;
 
         // Speciate all genomes in population
+        System.out.println("Calculating fitness and speciating...");
         for ( Genome g : pop ) {
             g.fitness = f.simulate( new Network(g) );
             speciate(g);
         }
 
-        //System.out.println("Top organism:\n" + new Network(getMostFit()));
+        System.out.println("Top organism:\n" + new Network(getMostFit()));
     }
 
     public void addGenome (Genome g) {
@@ -95,8 +96,11 @@ public class Population {
             //pop.add( new Genome(inputs, outputs) );
         //***
 
-        for ( Genome g : pop )
+        for ( Genome g : pop ) {
+            System.out.println("Mutating next genome");
             mutate(g);
+        }
+        System.out.println("Ready for next gen...");
 
         return new Population(pop,
                               dis_rate,
@@ -196,18 +200,26 @@ public class Population {
         Random r = new Random();
 
         double weight_val_rate = .70;
+        //System.out.println("Mutating...");
 
+        System.out.println("Starting perturbation...");
         // Mutations for input to hidden connections
         perturbLinks(g.input_nodes, g.hidden_nodes, g);
+        System.out.println("1");
 
         // Mutations for hidden to hidden connections
         perturbLinks(g.hidden_nodes, g.hidden_nodes, g);
+        System.out.println("2");
 
         // Mutations for hidden to output connections
         perturbLinks(g.hidden_nodes, g.output_nodes, g);
+        System.out.println("3");
 
         // Mutations for input to output connections
         perturbLinks(g.input_nodes, g.output_nodes, g);
+        System.out.println("4");
+
+        System.out.println("Perturbation done!");
 
         // Mutate existing connections
         for ( ConnectionGene cg : g.connections ) {
@@ -235,16 +247,22 @@ public class Population {
         for ( Node inp : input_layer ) {
             for ( Node out : output_layer ) {
                 */
-        for (int i = 0; i < input_layer.size(); i++) {
+        System.out.println("inp size: " + input_layer.size());
+        System.out.println("out size: " + output_layer.size());
+
+        // Predefinition avoids run away size changes in for loops
+        int inp_size = input_layer.size();
+        int out_size = output_layer.size();
+
+        for (int i = 0; i < inp_size; i++) {
             inp = input_layer.get(i);
 
-            for (int j = 0; j < output_layer.size(); j++) {
+            for (int j = 0; j < out_size; j++) {
                 out = output_layer.get(j);
 
                 if ( r.nextDouble() < weight_rate ) {
                     // Chance to add a connection
                     if ( r.nextDouble() < link_rate ) {
-                        if (inv_db == null)
                         g.addConnection(inp, out, inv_db);
                     }
                     if ( r.nextDouble() < node_rate )
