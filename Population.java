@@ -16,10 +16,11 @@ public class Population {
         this.inv_db = new Innovations();
 
         for (int i = 0; i < size; i++)
-            pop.add( new Genome(inputs, outputs) );
+            pop.add( new Genome(inputs, outputs, inv_db) );
 
         species = new ArrayList<Species>();
-        gen_mutations = new ArrayList<ConnectionGene>();
+        //gen_mutations = new ArrayList<ConnectionGene>();
+
         this.f = f;
         this.dis_rate   = dis_rate;
         this.inter_rate = inter_rate;
@@ -58,7 +59,7 @@ public class Population {
 
         // Speciate all genomes in population
         //System.out.println("Calculating fitness and speciating...");
-        //for ( Genome g : pop ) {
+        //for ( Genome g : pop )
         for (int i = 0; i < pop.size(); i++) {
             Genome g = pop.get(i);
             if (g.size() > 100)
@@ -78,34 +79,21 @@ public class Population {
     }
 
     public Population nextGen () {
-        Genome parent1 = getMostFit();
-
-        int temp_ind = pop.indexOf(parent1);
-        Genome temp = pop.remove(temp_ind);
-
-        Genome parent2 = getMostFit();
-
-        // Return first genome to population
-        pop.add(temp_ind, temp);
-
-        Genome child = crossover(parent1, parent2);
-
-        /*
-        ArrayList<Genome> temp_pop = pop;
+            /*
+        // Reset population
         pop.clear();
-        */
 
-        // Initialize new population
-        //ArrayList<Genome> new_pop = new ArrayList<Genome>();
-
-        //for (int i = 0; i < 100; i++)
-            //pop.add( new Genome(inputs, outputs) );
-        //***
+        // Accumulate genomes from species reproduction
+        for ( Species s : species )
+            pop.addAll( s.reproduce() );
+            */
 
         for ( Genome g : pop ) {
             //System.out.println("Mutating next genome");
             mutate(g);
         }
+
+        System.out.println(inv_db);
 
         return new Population(pop,
                               dis_rate,
@@ -122,7 +110,7 @@ public class Population {
         int i = 0;
 
         if (species.isEmpty())
-            species.add( new Species(g) );
+            species.add( new Species(g, f) );
 
         // Search for an appropriate species
         do {
@@ -131,61 +119,13 @@ public class Population {
         } while (g_compat > compatThresh && i < species.size());
 
         if (g_compat > compatThresh)
-            System.out.println("New species : " + g_compat);
+            //System.out.println("New species : " + g_compat);
         // Add genome to threshold matched species
         if (g_compat < compatThresh)
             species.get(i-1).add(g);
         // If no match exists, create a new species
         else
-            species.add( new Species(g) );
-    }
-
-    /***************/
-    /*   PRIVATE   */
-    /***************/
-
-    private Genome crossover (Genome g1, Genome g2) {
-        Genome child = new Genome(inputs, outputs);
-
-        // Assign all matching connection genes
-        ArrayList<ConnectionGene> matching = g1.getMatching(g2);
-        child.addConnections(matching);
-
-        // If parents have equal fitness, randomly match excess genes
-        if (g1.fitness == g2.fitness) {
-            // TODO: Could be more efficient
-            // Derive all unmatching genes (excess and disjoint)
-            ArrayList<ConnectionGene> excess_g1 = new ArrayList<ConnectionGene>(g1.connections);
-            excess_g1.removeAll(matching);
-            ArrayList<ConnectionGene> excess_g2 = new ArrayList<ConnectionGene>(g2.connections);
-            excess_g2.removeAll(matching);
-
-            Random r = new Random();
-
-            // Randomly assign excess genes to child
-            for ( ConnectionGene c : excess_g1 )
-                if ( r.nextBoolean() )
-                    child.addConnection(c);
-            for ( ConnectionGene c : excess_g2 )
-                if ( r.nextBoolean() )
-                    child.addConnection(c);
-        }
-
-        // Otherwise child inherits excess genes of most fit parent
-        else if (g1.fitness > g2.fitness) {
-            ArrayList<ConnectionGene> excess_g1 = new ArrayList<ConnectionGene>(g1.connections);
-            excess_g1.removeAll(matching);
-
-            child.addConnections(excess_g1);
-        }
-        else if (g1.fitness < g2.fitness) {
-            ArrayList<ConnectionGene> excess_g2 = new ArrayList<ConnectionGene>(g2.connections);
-            excess_g2.removeAll(matching);
-
-            child.addConnections(excess_g2);
-        }
-
-        return child;
+            species.add( new Species(g, f) );
     }
 
     public Genome getMostFit () {
@@ -245,6 +185,10 @@ public class Population {
         }
     }
 
+    /***************/
+    /*   PRIVATE   */
+    /***************/
+
     private void perturbLinks (ArrayList<Node> input_layer,
                                   ArrayList<Node> output_layer,
                                   Genome g) {
@@ -279,11 +223,11 @@ public class Population {
                     // Chance to add a connection
                     if ( r.nextDouble() < link_rate ) {
                         //System.out.println("Call addConnection!");
-                        g.addConnection(inp, out, inv_db);
+                        g.addConnection(inp, out);
                     }
                     else if ( r.nextDouble() < node_rate ) {
                         //System.out.println("Call addNode!");
-                        g.addNode(inp, out, inv_db);
+                        g.addNode(inp, out);
                     }
                 }
             }

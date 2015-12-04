@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Innovations {
     public Innovations () {
@@ -10,32 +11,53 @@ public class Innovations {
     }
 
     // Add node innovation
-    public boolean addInnovation (ConnectionGene c1, ConnectionGene c2, Node n) {
-        // If innovation is novel, add to database
-        int inv_id = checkInnovation(c1, c2);
-        if ( inv_id == -1) {
-            c1.innovation = connGeneNum();
-            c2.innovation = connGeneNum();
+    public boolean addInnovation (Optional<ConnectionGene> c1, Optional<ConnectionGene> c2, Node n) {
+        // TODO: Add support for one connection parameter provided
 
+        // If both connections are provided
+        if (c1.isPresent() && c2.isPresent()) {
+            int inv_id = checkInnovation(c1.get(), c2.get());
+
+            // If innovation is novel, add to database
+            if ( inv_id == -1) {
+                c1.get().innovation = connInvNum();
+                c2.get().innovation = connInvNum();
+
+                int inv = nodeInvNum();
+                nodes.add( new NodeInv(inv, c1, c2) );
+                // Assign genome node a new id
+                n.id = inv;
+            }
+            else {
+                // Assign connection ids to existing innovation ids
+                NodeInv ni = getNodeInvById(inv_id);
+                c1.get().innovation = ni.c_in.get().innovation;
+                c2.get().innovation = ni.c_out.get().innovation;
+
+                // Assign genome node the existing id
+                n.id = inv_id;
+
+                return false;
+            }
+
+            // New innovation
+            return true;
+        }
+
+        // If no connections are provided (assume laster support for 1)
+        else {
+            // Floating nodes are always novel innovations
             int inv = nodeInvNum();
-            nodes.add( new NodeInv(inv, c1, c2) );
+
+            // Add node to database
+            nodes.add( new NodeInv(inv, Optional.empty(), Optional.empty()) );
+
             // Assign genome node a new id
             n.id = inv;
+
+            // New innovation
+            return true;
         }
-        else {
-            // Assign connection ids to existing innovation ids
-            NodeInv ni = getNodeInvById(inv_id);
-            c1.innovation = ni.c_in.innovation;
-            c2.innovation = ni.c_out.innovation;
-
-            // Assign genome node the existing id
-            n.id = inv_id;
-
-            return false;
-        }
-
-        // New innovation
-        return true;
     }
 
     // Add connection innovation
@@ -43,7 +65,7 @@ public class Innovations {
         // If innovation is novel, add to database
         int inv_id = checkInnovation(c);
         if (inv_id == -1) {
-            c.innovation = connGeneNum();
+            c.innovation = connInvNum();
             connections.add( new ConnectionInv(nodeInvNum(), c) );
         }
         else {
@@ -62,8 +84,9 @@ public class Innovations {
     public int checkInnovation (ConnectionGene c_in, ConnectionGene c_out) {
         // Look for a node innovation with matching in and out node ids
         for ( NodeInv ni : nodes )
-            if (c_in.in.id == ni.c_in.in.id && c_out.out.id == ni.c_out.out.id)
-                return ni.id;
+            if ( ni.c_in.isPresent() && ni.c_out.isPresent() )
+                if (c_in.in.id == ni.c_in.get().in.id && c_out.out.id == ni.c_out.get().out.id)
+                    return ni.id;
 
         // Innovation doesn't exist
         return -1;
@@ -82,6 +105,7 @@ public class Innovations {
 
     // Check innovations for both connection (choice = 0) and node (choice = 1)
     // TODO: This is a terrible design, and definitely temporary.
+    /*
     public int checkInnovation (Node c_in, Node c_out, int choice) {
         if (choice == 0) {
             // Look for a connection innovation with matching in and out node ids
@@ -99,28 +123,25 @@ public class Innovations {
         // Innovation doesn't exist
         return -1;
     }
-
-    /*
-    // Get id of input connection for existing innovation
-    public int getInId(int node_id) {
-        for ( NodeInv ni : nodes )
-            if (ni.id == node_id)
-                return ni.id_in;
-
-        // Node innovation doesn't exist
-        return -1;
-    }
-
-    // Get id of output connection for existing innovation
-    public int getOutId(int node_id) {
-        for ( NodeInv ni : nodes )
-            if (ni.id == node_id)
-                return ni.id_out;
-
-        // Node innovation doesn't exist
-        return -1;
-    }
     */
+
+    public String toString () {
+        String str = "";
+
+        // Print connection invs
+        str += "\nConnection Innovations\n"
+               + "----------------------\n\n";
+        for ( ConnectionInv ci : connections )
+            str += ci.id + "\n" + ci.c + "\n";
+
+        // Print node invs
+        str += "\nNode Innovations\n"
+               + "----------------\n\n";
+        for ( NodeInv ni : nodes )
+            str += ni.id + "\n" + ni.c_in + "--> " + ni.c_out + "\n";
+
+        return str;
+    }
 
     private NodeInv getNodeInvById (int id) {
         for ( NodeInv n : nodes )
@@ -147,9 +168,6 @@ public class Innovations {
         return nextConnId++;
     }
 
-    private int connGeneNum () {
-        return connGeneId++;
-    }
     /************************************ */
 
     private ArrayList<ConnectionInv> connections;
@@ -157,7 +175,6 @@ public class Innovations {
 
     private int nextConnId;
     private int nextNodeId;
-    private int connGeneId;
 
     /********************************/
     // Container innovation classes //
@@ -174,14 +191,15 @@ public class Innovations {
     }
 
     class NodeInv {
-        public NodeInv (int id, ConnectionGene c1, ConnectionGene c2) {
+        // Optionals allow floating nodes or nodes with one connection
+        public NodeInv (int id, Optional<ConnectionGene> c1, Optional<ConnectionGene> c2) {
             this.c_in   = c1;
             this.c_out  = c2;
             this.id     = id;
         }
 
-        final public ConnectionGene c_in;
-        final public ConnectionGene c_out;
+        final public Optional<ConnectionGene> c_in;
+        final public Optional<ConnectionGene> c_out;
         final public int id; // Node id
     }
 
