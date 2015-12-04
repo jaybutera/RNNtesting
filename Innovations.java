@@ -20,8 +20,14 @@ public class Innovations {
 
             // If innovation is novel, add to database
             if ( inv_id == -1) {
+                /*
                 c1.get().innovation = connInvNum();
                 c2.get().innovation = connInvNum();
+                */
+
+                // Add connections to database
+                addInnovation(c1.get());
+                addInnovation(c2.get());
 
                 int inv = nodeInvNum();
                 nodes.add( new NodeInv(inv, c1, c2) );
@@ -62,11 +68,26 @@ public class Innovations {
 
     // Add connection innovation
     public boolean addInnovation (ConnectionGene c) {
-        // If innovation is novel, add to database
         int inv_id = checkInnovation(c);
+
+        // If innovation is novel, add to database
         if (inv_id == -1) {
-            c.innovation = connInvNum();
-            connections.add( new ConnectionInv(nodeInvNum(), c) );
+            int inv = connInvNum();
+            c.innovation = inv;
+            connections.add( new ConnectionInv(inv, c) );
+
+            /// Stitch connection innovation to existing node(s)
+
+            // In node
+            NodeInv ni = getNodeInvById(c.in.id);
+            if (ni != null)
+                ni.c_in = Optional.of(c);
+            // Out node
+            ni = getNodeInvById(c.out.id);
+            if (ni != null)
+                ni.c_out = Optional.of(c);
+
+            ///
         }
         else {
             // Assign connection id to existing innovation id
@@ -198,8 +219,8 @@ public class Innovations {
             this.id     = id;
         }
 
-        final public Optional<ConnectionGene> c_in;
-        final public Optional<ConnectionGene> c_out;
+        public Optional<ConnectionGene> c_in;
+        public Optional<ConnectionGene> c_out;
         final public int id; // Node id
     }
 

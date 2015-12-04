@@ -80,27 +80,11 @@ public class Genome {
     }
 
     // Manually defined weight
-    public void addConnection (Node n1, Node n2, double weight) {
-        connections.add( new ConnectionGene(n1,
-                                            n2,
-                                            weight,
-                                            innovationNum()) );
-    }
-    public void addConnection (int n1, int n2, double weight) {
-        connections.add( new ConnectionGene(getNodeById(n1),
-                                            getNodeById(n2),
-                                            weight,
-                                            innovationNum()) );
-    }
-
-    // Automatic random weight
-    public ConnectionGene addConnection (Node n1, Node n2) {
-        double weight = new Random().nextDouble();
-
+    public ConnectionGene addConnection (Node n1, Node n2, double weight) {
         ConnectionGene cg = new ConnectionGene(n1,
                                                n2,
                                                weight,
-                                               0 ); // Innovation is modified by Innovations (inv_db)
+                                               0);
 
         // If this is a new innovation, add connection
         if (inv_db.addInnovation(cg))
@@ -112,15 +96,32 @@ public class Genome {
 
         return cg;
     }
+    /*
+    public void addConnection (int n1, int n2, double weight) {
+        connections.add( new ConnectionGene(getNodeById(n1),
+                                            getNodeById(n2),
+                                            weight,
+                                            innovationNum()) );
+    }
+    */
+
+    // Automatic random weight
+    public ConnectionGene addConnection (Node n1, Node n2) {
+        double weight = new Random().nextDouble();
+
+        return addConnection (n1, n2, weight);
+    }
+    /*
     public void addConnection (int n1, int n2) {
         connections.add( new ConnectionGene(getNodeById(n1),
                                             getNodeById(n2),
                                             new Random().nextDouble(),
                                             innovationNum()) );
     }
+    */
 
     // Automatic random weight at random point
-    public void addConnection () {
+    public ConnectionGene addConnection () {
         Random r = new Random();
         Node n1;
         Node n2;
@@ -172,7 +173,7 @@ public class Genome {
                 n2 = output_nodes.get(r.nextInt(output_nodes.size()));
         }
 
-        addConnection(n1, n2);
+        return addConnection(n1, n2);
     }
 
     /*
