@@ -1,6 +1,6 @@
 public class Node {
     public final NodeType type;
-    public final int id;
+    public int id;
 
     // Allow no-id option in final product for external node testing
     /*

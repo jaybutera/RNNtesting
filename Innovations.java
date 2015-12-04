@@ -10,19 +10,26 @@ public class Innovations {
     }
 
     // Add node innovation
-    public boolean addInnovation (ConnectionGene c1, ConnectionGene c2) {
+    public boolean addInnovation (ConnectionGene c1, ConnectionGene c2, Node n) {
         // If innovation is novel, add to database
         int inv_id = checkInnovation(c1, c2);
         if ( inv_id == -1) {
             c1.innovation = connGeneNum();
             c2.innovation = connGeneNum();
-            nodes.add( new NodeInv(nodeInvNum(), c1, c2) );
+
+            int inv = nodeInvNum();
+            nodes.add( new NodeInv(inv, c1, c2) );
+            // Assign genome node a new id
+            n.id = inv;
         }
         else {
             // Assign connection ids to existing innovation ids
-            NodeInv n = getNodeInvById(inv_id);
-            c1.innovation = n.c_in.innovation;
-            c2.innovation = n.c_out.innovation;
+            NodeInv ni = getNodeInvById(inv_id);
+            c1.innovation = ni.c_in.innovation;
+            c2.innovation = ni.c_out.innovation;
+
+            // Assign genome node the existing id
+            n.id = inv_id;
 
             return false;
         }

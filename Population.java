@@ -57,13 +57,19 @@ public class Population {
         this.compatThresh= compat_thresh;
 
         // Speciate all genomes in population
-        System.out.println("Calculating fitness and speciating...");
-        for ( Genome g : pop ) {
+        //System.out.println("Calculating fitness and speciating...");
+        //for ( Genome g : pop ) {
+        for (int i = 0; i < pop.size(); i++) {
+            Genome g = pop.get(i);
+            if (g.size() > 100)
+                pop.remove(g);
+            //System.out.print("|" + g.size());
             g.fitness = f.simulate( new Network(g) );
             speciate(g);
         }
+        //System.out.println("");
 
-        System.out.println("Top organism:\n" + new Network(getMostFit()));
+        //System.out.println("Top organism:\n" + getMostFit());
     }
 
     public void addGenome (Genome g) {
@@ -97,10 +103,9 @@ public class Population {
         //***
 
         for ( Genome g : pop ) {
-            System.out.println("Mutating next genome");
+            //System.out.println("Mutating next genome");
             mutate(g);
         }
-        System.out.println("Ready for next gen...");
 
         return new Population(pop,
                               dis_rate,
@@ -125,8 +130,10 @@ public class Population {
             i++;
         } while (g_compat > compatThresh && i < species.size());
 
-        // Add genome to threshold matched species
         if (g_compat > compatThresh)
+            System.out.println("New species : " + g_compat);
+        // Add genome to threshold matched species
+        if (g_compat < compatThresh)
             species.get(i-1).add(g);
         // If no match exists, create a new species
         else
@@ -185,7 +192,7 @@ public class Population {
         Genome top = pop.get(0);
 
         for ( Genome g : pop ) {
-            if (g.fitness > top.fitness)
+            if (g.fitness < top.fitness)
                 top = g;
         }
 
@@ -196,30 +203,35 @@ public class Population {
         return species.size();
     }
 
+    // Get genome in population by index
+    public Genome getGenome (int i) {
+        return pop.get(i);
+    }
+
     public void mutate(Genome g) {
         Random r = new Random();
 
         double weight_val_rate = .70;
         //System.out.println("Mutating...");
 
-        System.out.println("Starting perturbation...");
+        //System.out.println("Starting perturbation...");
         // Mutations for input to hidden connections
         perturbLinks(g.input_nodes, g.hidden_nodes, g);
-        System.out.println("1");
+        //System.out.println("1");
 
         // Mutations for hidden to hidden connections
         perturbLinks(g.hidden_nodes, g.hidden_nodes, g);
-        System.out.println("2");
+        //System.out.println("2");
 
         // Mutations for hidden to output connections
         perturbLinks(g.hidden_nodes, g.output_nodes, g);
-        System.out.println("3");
+        //System.out.println("3");
 
         // Mutations for input to output connections
         perturbLinks(g.input_nodes, g.output_nodes, g);
-        System.out.println("4");
+        //System.out.println("4");
 
-        System.out.println("Perturbation done!");
+        //System.out.println("Perturbation done!");
 
         // Mutate existing connections
         for ( ConnectionGene cg : g.connections ) {
@@ -247,8 +259,11 @@ public class Population {
         for ( Node inp : input_layer ) {
             for ( Node out : output_layer ) {
                 */
+        /*
         System.out.println("inp size: " + input_layer.size());
         System.out.println("out size: " + output_layer.size());
+        System.out.println("");
+        */
 
         // Predefinition avoids run away size changes in for loops
         int inp_size = input_layer.size();
@@ -263,10 +278,13 @@ public class Population {
                 if ( r.nextDouble() < weight_rate ) {
                     // Chance to add a connection
                     if ( r.nextDouble() < link_rate ) {
+                        //System.out.println("Call addConnection!");
                         g.addConnection(inp, out, inv_db);
                     }
-                    if ( r.nextDouble() < node_rate )
+                    else if ( r.nextDouble() < node_rate ) {
+                        //System.out.println("Call addNode!");
                         g.addNode(inp, out, inv_db);
+                    }
                 }
             }
         }

@@ -100,8 +100,14 @@ public class Genome {
                                                n2,
                                                weight,
                                                0 ); // Innovation is modified by Innovations (inv_db)
-        inv_db.addInnovation(cg);
-        connections.add(cg);
+
+        // If this is a new innovation, add connection
+        if (inv_db.addInnovation(cg))
+            connections.add(cg);
+
+        // If it isn't new, add connection if it doesn't already exist in genome
+        if (!this.contains(cg))
+            connections.add(cg);
 
         return cg;
     }
@@ -168,8 +174,6 @@ public class Genome {
                                                new Random().nextDouble(),
                                                innovationNum());
 
-        // Need to change to try again as long as it is still possible to make
-        // a new connection (not fully connected)
         if (!this.contains(cg))
             connections.add(cg);
         /*
@@ -223,11 +227,13 @@ public class Genome {
     }
 
     // Add node given two node ids
+    /*
     public void addNode (int n1, int n2, Innovations inv_db) {
         /* * * * * */
         // Inputs  //
         /* * * * * */
 
+/*
         Node n = new Node( nodeNum() );
         nodes.add(n);
         hidden_nodes.add(n);
@@ -241,6 +247,7 @@ public class Genome {
             if (connections.get(i).in == getNodeById(n1) && connections.get(i).out == getNodeById(n2))
                 connections.remove(connections.get(i));
     }
+    */
     // Add node given two nodes
     public Node addNode (Node n1, Node n2, Innovations inv_db) {
         /* * * * * */
@@ -253,16 +260,33 @@ public class Genome {
         ConnectionGene c1 = addConnection(n1, n, inv_db);
         // Connect n to n2
         ConnectionGene c2 = addConnection(n, n2, inv_db);
-        // Disable connection from n1 to n2
-        for (int i = 0; i < connections.size(); i++)
-            if (connections.get(i).in == n1 && connections.get(i).out == n2)
-                connections.remove(connections.get(i));
 
-        // Add to innovation database and update node id
-        inv_db.addInnovation(c1, c2);
-        // Add to local genome database
-        nodes.add(n);
-        hidden_nodes.add(n);
+        // If this is a new innovation, finish augmentation process
+        if (inv_db.addInnovation(c1, c2, n)) {
+            // Add to local genome database
+            nodes.add(n);
+            hidden_nodes.add(n);
+
+            // Disable connection from n1 to n2
+            connections.remove(getConnection(n1, n2));
+            for (int i = 0; i < connections.size(); i++)
+                if (connections.get(i).in == n1 && connections.get(i).out == n2)
+                    connections.remove(connections.get(i));
+        }
+        // If it's not a new innovation, finish process if it doesn't already
+        // exist in genome
+        else {
+            if ( getNodeById(n.id) == null ) {
+                nodes.add(n);
+                hidden_nodes.add(n);
+
+                // Disable connection from n1 to n2
+                connections.remove(getConnection(n1, n2));
+                for (int i = 0; i < connections.size(); i++)
+                    if (connections.get(i).in == n1 && connections.get(i).out == n2)
+                        connections.remove(connections.get(i));
+            }
+        }
 
         return n;
     }
@@ -397,6 +421,10 @@ public class Genome {
             if (cg.in.id == in.id && cg.out.id == out.id)
                 return cg;
         return null;
+    }
+
+    public int size() {
+        return nodes.size();
     }
 
     // Display phenotype of genome

@@ -33,26 +33,27 @@ public class Species {
     public double compatibility (Genome g) {
         int N;
 
+        /*
+        if (g.connections.size() < 20 && representative.connections.size() < 20)
+            N = 1;
+            */
+
         // Set largest genome
         if (g.connections.size() > representative.connections.size())
             N = g.connections.size();
         else
             N = representative.connections.size();
 
-        /*
-        return   (c1 * g.getExcess(representative).size()) / N
-               + (c2 * g.getDisjoint(representative).size()) / N
-               +  c3 * g.weightDiff(representative);
-               */
         double x =   (c1 * g.getExcess(representative).size()) / N
                    + (c2 * g.getDisjoint(representative).size()) / N
                    +  c3 * g.weightDiff(representative);
+
         /*
-        System.out.println("Excess size: " + g.getExcess(representative).size());
+        System.out.println("\nExcess size: " + g.getExcess(representative).size());
         System.out.println("Disjoint size: " + g.getDisjoint(representative).size());
         System.out.println("Weight diff: " + g.weightDiff(representative));
-        System.out.println("Compatibility of : " + x);
         */
+        //System.out.println("\nCompatibility : " + x);
         return x;
     }
 
@@ -60,10 +61,18 @@ public class Species {
         genomes.add(g);
 
         // Make genome the new rep if it has the highest fitness
-        if (g.fitness > representative.fitness) {
+        if (g.fitness < representative.fitness) {
             representative = g;
         }
     }
+
+    /*
+    private Genome findRep () {
+        for ( Genome g : genomes )
+        if (g.fitness < representative.fitness)
+            representative = g;
+    }
+    */
 
     private ArrayList<Genome> genomes;
     private Genome representative;
