@@ -80,6 +80,17 @@ public class Genome {
             addConnection();
     }
 
+    // Copy constructor
+    public Genome (Genome g) {
+        connections  = g.connections;
+        nodes        = g.nodes;
+        hidden_nodes = g.hidden_nodes;
+        input_nodes  = g.input_nodes;
+        output_nodes = g.output_nodes;
+
+        this.inv_db = g.inv_db;
+    }
+
     // Manually defined weight
     public ConnectionGene addConnection (Node n1, Node n2, double weight) {
         ConnectionGene cg = new ConnectionGene(n1,
