@@ -82,13 +82,29 @@ public class Genome {
 
     // Copy constructor
     public Genome (Genome g) {
-        connections  = g.connections;
-        nodes        = g.nodes;
-        hidden_nodes = g.hidden_nodes;
-        input_nodes  = g.input_nodes;
-        output_nodes = g.output_nodes;
+        connections  = new ArrayList<ConnectionGene>();
+        nodes        = new ArrayList<Node>();
+        hidden_nodes = new ArrayList<Node>();
+        input_nodes  = new ArrayList<Node>();
+        output_nodes = new ArrayList<Node>();
+
+        for ( ConnectionGene cg : g.connections )
+            connections.add(cg);
+        for ( Node n : nodes )
+            nodes.add(n);
+        for ( Node n : g.hidden_nodes )
+            hidden_nodes.add(n);
+        for ( Node n : g.input_nodes )
+            input_nodes.add(n);
+        for ( Node n : g.output_nodes )
+            output_nodes.add(n);
 
         this.inv_db = g.inv_db;
+    }
+
+    // TODO: Temporary method until I find a better way to handle crossovers
+    public void flush () {
+        connections.clear();
     }
 
     // Manually defined weight
