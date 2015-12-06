@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.Comparator;
 
 public class Genome {
     // These should be private
@@ -176,49 +177,16 @@ public class Genome {
         return addConnection(n1, n2);
     }
 
-    /*
     public void addConnection (ConnectionGene c) {
-        // Add nodes if they don't exist
-        if (!nodes.contains(c.in))
-            nodes.add(c.in);
-        if (!nodes.contains(c.out))
-            nodes.add(c.out);
-
-        // Add input node to organized node lists
-        switch (c.in.type) {
-            case INPUT:
-                input_nodes.add(c.in);
-                break;
-            case HIDDEN:
-                hidden_nodes.add(c.in);
-                break;
-            case OUTPUT:
-                output_nodes.add(c.in);
-                break;
-        }
-
-        // Add output node to organized node lists
-        switch (c.out.type) {
-            case INPUT:
-                input_nodes.add(c.out);
-                break;
-            case HIDDEN:
-                hidden_nodes.add(c.out);
-                break;
-            case OUTPUT:
-                output_nodes.add(c.out);
-                break;
-        }
-
-        // Add connection
-        connections.add(c);
+        addNode(c.in);
+        addNode(c.out);
+        addConnection(c.in, c.out);
     }
 
     public void addConnections (ArrayList<ConnectionGene> cs) {
         for (ConnectionGene c : cs)
             addConnection(c);
     }
-    */
 
     // Add node given two node ids
     /*
@@ -244,10 +212,6 @@ public class Genome {
     */
     // Add node given two nodes
     public Node addNode (Node n1, Node n2) {
-        /* * * * * */
-        // Inputs  //
-        /* * * * * */
-
         Node n = new Node(0);
 
         // Connect n1 to n
@@ -363,7 +327,7 @@ public class Genome {
     public boolean contains (ConnectionGene c) {
         // Look for matching innovation number
         for ( ConnectionGene cg : connections )
-            if (cg.in == c.in && cg.out == c.out) {
+            if (cg.in.id == c.in.id && cg.out.id == c.out.id) {
                 //System.out.println("Matching gene found!");
                 return true;
             }
@@ -382,18 +346,22 @@ public class Genome {
     public ArrayList<ConnectionGene> getExcess (Genome g) {
         // Start at end of genome and look backward for matching gene
         Genome small = getSmallest(g);
-        // Get last gene's id
-        int max_inv = small.connections.get(small.connections.size()-1).innovation;
-        //int max_inv = small.connections.get(0).innovation;
 
-        if (small != this)
-            return this.connections.stream().filter(s -> s.innovation > max_inv).collect(Collectors.toCollection(ArrayList::new));
-        return g.connections.stream().filter(s -> s.innovation > max_inv).collect(Collectors.toCollection(ArrayList::new));
+        // Get Largest gene id for both genomes
+        Integer this_max_inv = small.connections.stream().map(s -> Integer.valueOf(s.innovation)).max(Comparator.naturalOrder()).get();
+        Integer g_max_inv    = g.connections.stream().map(s -> Integer.valueOf(s.innovation)).max(Comparator.naturalOrder()).get();
+
+        if (g_max_inv < this_max_inv)
+            return this.connections.stream().filter(s -> s.innovation > g_max_inv).collect(Collectors.toCollection(ArrayList::new));
+        return g.connections.stream().filter(s -> s.innovation > this_max_inv).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<ConnectionGene> getDisjoint (Genome g) {
+        // TODO : Could be optimized. Should store genes pools in sets for easy
+        // disjoint evaluation
+
         Genome small = getSmallest(g);
-        int max_inv = small.connections.get(small.connections.size()-1).innovation;
+        Integer max_inv = small.connections.stream().map(s -> Integer.valueOf(s.innovation)).max(Comparator.naturalOrder()).get();
         ArrayList<ConnectionGene> disjoint = new ArrayList<ConnectionGene>();
 
         if (small != this) {
@@ -401,7 +369,7 @@ public class Genome {
                                         .filter(s -> !this.contains(s))
                                         .collect(Collectors.toCollection(ArrayList::new));
             disjoint.addAll(this.connections.stream()
-                                            .filter(s -> !this.contains(s) && s.innovation < max_inv)
+                                            .filter(s -> !small.contains(s) && s.innovation < max_inv)
                                             .collect(Collectors.toCollection(ArrayList::new)));
         }
         else if (small != g) {
@@ -409,7 +377,7 @@ public class Genome {
                                         .filter(s -> !g.contains(s))
                                         .collect(Collectors.toCollection(ArrayList::new));
             disjoint.addAll(g.connections.stream()
-                                            .filter(s -> !g.contains(s) && s.innovation < max_inv)
+                                            .filter(s -> !small.contains(s) && s.innovation < max_inv)
                                             .collect(Collectors.toCollection(ArrayList::new)));
         }
 
