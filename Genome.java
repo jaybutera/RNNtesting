@@ -343,8 +343,9 @@ public class Genome {
     }
     */
 
+    // Returns any excess genes from THIS genome
     public ArrayList<ConnectionGene> getExcess (Genome g) {
-        // Start at end of genome and look backward for matching gene
+        /*
         Genome small = getSmallest(g);
 
         // Get Largest gene id for both genomes
@@ -353,13 +354,20 @@ public class Genome {
 
         if (g_max_inv < this_max_inv)
             return this.connections.stream().filter(s -> s.innovation > g_max_inv).collect(Collectors.toCollection(ArrayList::new));
-        return g.connections.stream().filter(s -> s.innovation > this_max_inv).collect(Collectors.toCollection(ArrayList::new));
+        */
+
+        // Get largest innovation number in genome
+        Integer this_max_inv = g.connections.stream().map(s -> Integer.valueOf(s.innovation)).max(Comparator.naturalOrder()).get();
+
+        return this.connections.stream().filter(s -> s.innovation > this_max_inv).collect(Collectors.toCollection(ArrayList::new));
     }
 
+    // Returns any disjoint genes from THIS genome
     public ArrayList<ConnectionGene> getDisjoint (Genome g) {
         // TODO : Could be optimized. Should store genes pools in sets for easy
         // disjoint evaluation
 
+        /*
         Genome small = getSmallest(g);
         Integer max_inv = small.connections.stream().map(s -> Integer.valueOf(s.innovation)).max(Comparator.naturalOrder()).get();
         ArrayList<ConnectionGene> disjoint = new ArrayList<ConnectionGene>();
@@ -380,8 +388,11 @@ public class Genome {
                                             .filter(s -> !small.contains(s) && s.innovation < max_inv)
                                             .collect(Collectors.toCollection(ArrayList::new)));
         }
+        */
 
-        return disjoint;
+        return this.connections.stream()
+                               .filter(s -> !g.contains(s))
+                               .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<ConnectionGene> getMatching (Genome g) {
