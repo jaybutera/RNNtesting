@@ -2,9 +2,19 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Species {
-    public Species (final Genome seed, Fitness f, Innovations inv_db) {
+    public Species (final Genome seed,
+                    double dis_rate,
+                    double link_rate,
+                    double node_rate,
+                    Fitness f,
+                    Innovations inv_db) {
         genomes = new ArrayList<Genome>();
         genomes.add(seed);
+
+        // Init mutation params
+        this.dis_rate  = dis_rate;
+        this.link_rate = link_rate;
+        this.node_rate = node_rate;
 
         this.inv_db = inv_db;
 
@@ -24,6 +34,7 @@ public class Species {
         c3 = 1.0;
     }
 
+    /*
     public Species (final Genome seed,
                     double c1,
                     double c2,
@@ -43,6 +54,7 @@ public class Species {
         this.c2 = c2;
         this.c3 = c3;
     }
+    */
 
     public double compatibility (Genome g) {
         int N;
@@ -98,7 +110,7 @@ public class Species {
         // Replace pop with next generation
         genomes = children;
 
-        return children;
+        return genomes;
     }
 
     private Genome updateRep () {
@@ -118,40 +130,40 @@ public class Species {
 
         // If parents have equal fitness, randomly match excess genes
         if (g1.fitness == g2.fitness) {
-            // TODO: Could be more efficient
-            // Derive all unmatching genes (excess and disjoint)
-            ArrayList<ConnectionGene> excess_g1 = new ArrayList<ConnectionGene>(g1.connections);
-            excess_g1.removeAll(matching);
-            ArrayList<ConnectionGene> excess_g2 = new ArrayList<ConnectionGene>(g2.connections);
-            excess_g2.removeAll(matching);
-
             Random r = new Random();
 
+            // Get excess from both parents
+            ArrayList<ConnectionGene> excess = g1.getExcess(g2);
+            excess.addAll( g2.getExcess(g1) );
+
+            // Get disjoint from both parents
+            ArrayList<ConnectionGene> disjoint = g1.getDisjoint(g2);
+            disjoint.addAll( g2.getDisjoint(g1) );
+
             // Randomly assign excess genes to child
-            for ( ConnectionGene c : excess_g1 )
+            for ( ConnectionGene c : excess )
                 if ( r.nextBoolean() )
                     child.addConnection(c);
-            for ( ConnectionGene c : excess_g2 )
+            for ( ConnectionGene c : disjoint )
                 if ( r.nextBoolean() )
                     child.addConnection(c);
         }
 
-        // Otherwise child inherits excess genes of most fit parent
+        // Otherwise child inherits excess/disjoint genes of most fit parent
         else if (g1.fitness > g2.fitness) {
-            ArrayList<ConnectionGene> excess_g1 = new ArrayList<ConnectionGene>(g1.connections);
-            excess_g1.removeAll(matching);
-
-            child.addConnections(excess_g1);
+            child.addConnections( g1.getExcess(g2) );
+            child.addConnections( g1.getDisjoint(g2) );
         }
         else if (g1.fitness < g2.fitness) {
-            ArrayList<ConnectionGene> excess_g2 = new ArrayList<ConnectionGene>(g2.connections);
-            excess_g2.removeAll(matching);
-
-            child.addConnections(excess_g2);
+            child.addConnections( g2.getExcess(g1) );
+            child.addConnections( g2.getDisjoint(g1) );
         }
 
         // TODO: Make fitness class an interface so it doesn't have to be passed
         // around so much
+
+        // Apply mutations
+        mutate(child);
 
         // Determine fitness of the child
         child.fitness = f.simulate( new Network(child) );
@@ -159,6 +171,81 @@ public class Species {
         return child;
     }
 
+    public void mutate(Genome g) {
+        Random r = new Random();
+
+        double weight_val_rate = .70;
+
+        // Mutations for input to hidden connections
+        perturbLinks(g.input_nodes, g.hidden_nodes, g);
+
+        // Mutations for hidden to hidden connections
+        perturbLinks(g.hidden_nodes, g.hidden_nodes, g);
+
+        // Mutations for hidden to output connections
+        perturbLinks(g.hidden_nodes, g.output_nodes, g);
+
+        // Mutations for input to output connections
+        perturbLinks(g.input_nodes, g.output_nodes, g);
+
+        // Mutate existing connections
+        for ( ConnectionGene cg : g.connections ) {
+            // Chance to change weight
+            if ( r.nextDouble() < weight_val_rate )
+                cg.weight = r.nextDouble();
+
+            // Chance to enable or disable (flip) connection gene
+            if ( r.nextDouble() < dis_rate )
+                cg = cg.flipGene();
+        }
+    }
+
+    // For debugging. Should take this out soon.
+    public Genome getRep () {
+        return representative;
+    }
+
+    /***************/
+    /*   PRIVATE   */
+    /***************/
+
+    private void perturbLinks (ArrayList<Node> input_layer,
+                                  ArrayList<Node> output_layer,
+                                  Genome g) {
+        double weight_rate = .20;
+
+        Random r = new Random();
+
+        Node inp;
+        Node out;
+
+        /*
+        for ( Node inp : input_layer ) {
+            for ( Node out : output_layer ) {
+                */
+
+        // Predefinition avoids run away size changes in for loops
+        int inp_size = input_layer.size();
+        int out_size = output_layer.size();
+
+        for (int i = 0; i < inp_size; i++) {
+            inp = input_layer.get(i);
+
+            for (int j = 0; j < out_size; j++) {
+                out = output_layer.get(j);
+
+                if ( r.nextDouble() < weight_rate ) {
+                    // Chance to add a connection
+                    if ( r.nextDouble() < link_rate ) {
+                        g.addConnection(inp, out);
+                    }
+                    else if ( r.nextDouble() < node_rate ) {
+                        g.addNode(inp, out);
+                    }
+                }
+            }
+        }
+    }
 
     private ArrayList<Genome> genomes;
     private Genome representative;
@@ -172,4 +259,9 @@ public class Species {
     private double c1;
     private double c2;
     private double c3;
+
+    // Mutation parameters
+    double dis_rate;
+    double link_rate;
+    double node_rate;
 }
