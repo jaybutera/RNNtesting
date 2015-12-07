@@ -192,7 +192,7 @@ public class Species {
     public void mutate(Genome g) {
         Random r = new Random();
 
-        double weight_val_rate = .70;
+        double weight_val_rate = .50;
 
         // Mutations for input to hidden connections
         perturbLinks(g.input_nodes, g.hidden_nodes, g);
@@ -232,10 +232,8 @@ public class Species {
     /***************/
 
     private void perturbLinks (ArrayList<Node> input_layer,
-                                  ArrayList<Node> output_layer,
-                                  Genome g) {
-        double weight_rate = .20;
-
+                               ArrayList<Node> output_layer,
+                               Genome g) {
         Random r = new Random();
 
         Node inp;
@@ -251,7 +249,7 @@ public class Species {
             for (int j = 0; j < out_size; j++) {
                 out = output_layer.get(j);
 
-                if ( r.nextDouble() < weight_rate ) {
+                if ( r.nextDouble() < link_rate ) {
                     // Chance to add a connection
                     if ( r.nextDouble() < link_rate ) {
                         g.addConnection(inp, out);
