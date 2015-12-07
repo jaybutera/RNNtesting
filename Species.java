@@ -122,18 +122,15 @@ public class Species {
     }
 
     private Genome crossover (Genome g1, Genome g2) {
-        //Genome child = new Genome(input_size, output_size, inv_db);
+        Genome child = new Genome(input_size, output_size, inv_db);
 
         // Start from standard template
-        Genome child = new Genome(g1);
-        child.flush();
+        //Genome child = new Genome(g1);
+        //child.flush();
 
         // Assign all matching connection genes
         ArrayList<ConnectionGene> matching = g1.getMatching(g2);
-        System.out.println("Matching: " + matching);
-        child.addConnections(matching, false);
-        System.out.println("Matching: " + matching);
-        //chilld.connections.addAll(matching);
+        child.addConnections(matching);
 
         // If parents have equal fitness, randomly match excess genes
         if (g1.fitness == g2.fitness) {
@@ -150,20 +147,20 @@ public class Species {
             // Randomly assign excess genes to child
             for ( ConnectionGene c : excess )
                 if ( r.nextBoolean() )
-                    child.addConnection(c, false);
+                    child.addConnection(c);
             for ( ConnectionGene c : disjoint )
                 if ( r.nextBoolean() )
-                    child.addConnection(c, false);
+                    child.addConnection(c);
         }
 
         // Otherwise child inherits excess/disjoint genes of most fit parent
         else if (g1.fitness > g2.fitness) {
-            child.addConnections( g1.getExcess(g2), false );
-            child.addConnections( g1.getDisjoint(g2), false );
+            child.addConnections( g1.getExcess(g2) );
+            child.addConnections( g1.getDisjoint(g2) );
         }
         else if (g1.fitness < g2.fitness) {
-            child.addConnections( g2.getExcess(g1), false );
-            child.addConnections( g2.getDisjoint(g1), false );
+            child.addConnections( g2.getExcess(g1) );
+            child.addConnections( g2.getDisjoint(g1) );
         }
         /*
         if (child.inputSize() != input_size) {

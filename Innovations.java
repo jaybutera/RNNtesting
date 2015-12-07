@@ -4,66 +4,50 @@ import java.util.Optional;
 public class Innovations {
     public Innovations () {
         connections = new ArrayList<ConnectionInv>();
-        nodes = new ArrayList<NodeInv>();
+        nodes       = new ArrayList<NodeInv>();
 
         nextConnId = 0;
         nextNodeId = 0;
     }
 
-    public Innovations (int start_connId, int start_nodeId) {
+    public Innovations (ArrayList<Node> inputs, ArrayList<Node> outputs) {
         connections = new ArrayList<ConnectionInv>();
-        nodes = new ArrayList<NodeInv>();
+        nodes       = new ArrayList<NodeInv>();
 
-        nextConnId = start_connId;
-        nextNodeId = start_nodeId;
+        // Initialize database iterators to pass initial input/output nodes
+        nextConnId = 0;
+        nextNodeId = inputs.size() + outputs.size(); // Start iterator after input/output nodes
+
+        // Add input/output nodes to database
+        for ( Node n : inputs )
+            addInnovation(n);
+        for ( Node n : outputs )
+            addInnovation(n);
     }
 
     // Add node innovation
-    public boolean addInnovation (Optional<ConnectionGene> c1, Optional<ConnectionGene> c2, Node n) {
+    public boolean addInnovation (ConnectionGene c1, ConnectionGene c2, Node n) {
         // TODO: Add support for one connection parameter provided
 
-        // Check if node is input/output
-        /*
-        if (n.type == NodeType.INPUT || n.type == NodeType.OUTPUT) {
-            //System.out.println("Found an inp/out node");
-            int inv = checkInnovation(n);
-
-            // Innovation is novel
-            if (inv == -1) {
-                //inv = nodeInvNum();
-
-                // Add node to database
-                nodes.add( new NodeInv(n.id, Optional.empty(), Optional.empty()) );
-
-                // Assign genome node a new id
-                //n.id = inv;
-
-                return true;
-            }
-            // TODO: Add case for if it's not novel
-            return false;
-        }
-        */
-
-        if (
-        // If both connections are provided
-        if (c1.isPresent() && c2.isPresent()) {
-            int inv_id = checkInnovation(c1.get(), c2.get(), n);
-            System.out.println("Found a hidden node: " + inv_id);
+        // If node is not from initialization (input/output nodes)
+        // A.K.A. if it hasn't already been initialized
+        if (n.id == -1) {
+            int inv_id = checkInnovation(c1, c2, n);
+            //System.out.println("Found a hidden node: " + inv_id);
 
             // If innovation is novel, add to database
             if ( inv_id == -1) {
                 /*
-                c1.get().innovation = connInvNum();
-                c2.get().innovation = connInvNum();
+                c1.innovation = connInvNum();
+                c2.innovation = connInvNum();
                 */
 
                 // Add connections to database
-                addInnovation(c1.get());
-                addInnovation(c2.get());
+                addInnovation(c1);
+                addInnovation(c2);
 
                 int inv = nodeInvNum();
-                nodes.add( new NodeInv(inv, c1, c2) );
+                nodes.add( new NodeInv(inv, Optional.of(c1), Optional.of(c2)) );
                 // Assign genome node a new id
                 n.id = inv;
             }
@@ -71,46 +55,47 @@ public class Innovations {
                 // Assign connection ids to existing innovation ids
                 NodeInv ni = getNodeInvById(inv_id);
 
-                System.out.println(c1.get());
-                System.out.println(c1.get());
+                /*
+                System.out.println(c1);
+                System.out.println(c1);
+                */
 
-                c1.get().innovation = ni.c_in.get().innovation;
-                c2.get().innovation = ni.c_out.get().innovation;
+                c1.innovation = ni.c_in.get().innovation;
+                c2.innovation = ni.c_out.get().innovation;
 
                 // Assign genome node the existing id
                 n.id = inv_id;
 
+                // Not a new innovation
                 return false;
             }
+        }
+        else
+            return false;
+
+        // New innovation
+        return true;
+    }
+
+    // TODO: Make public. Instead of optional parameters just overload
+    // Assumes pre initialization of id in parameter node
+    public boolean addInnovation (Node n) {
+        // Innovation is novel
+        if ( !checkInnovation(n) ) {
+            int inv = nodeInvNum();
+
+            // Add node to database
+            nodes.add( new NodeInv(inv, Optional.empty(), Optional.empty()) );
+
+            // Assign genome node a new id
+            n.id = inv;
 
             // New innovation
             return true;
         }
 
-        // If no connections are provided (assume later support for 1)
-        else {
-            System.out.println("Found a hidden node");
-            // Check for pre-foating nodes
-            int inv = checkInnovation(n);
-
-            // Innovation is novel
-            if (inv == -1) {
-                inv = nodeInvNum();
-
-                // Add node to database
-                nodes.add( new NodeInv(inv, Optional.empty(), Optional.empty()) );
-
-                // Assign genome node a new id
-                n.id = inv;
-            }
-            // Innovation exists
-            else {
-                n.id = inv;
-            }
-
-            // New innovation
-            return true;
-        }
+        // Innovation exists
+        return false;
     }
 
     // Add connection innovation
@@ -126,6 +111,7 @@ public class Innovations {
             /// Stitch connection innovation to existing node(s)
 
             // In node
+            /*
             NodeInv ni = getNodeInvById(c.in.id);
             if (ni != null)
                 ni.c_in = Optional.of(c);
@@ -133,6 +119,7 @@ public class Innovations {
             ni = getNodeInvById(c.out.id);
             if (ni != null)
                 ni.c_out = Optional.of(c);
+                */
 
             ///
         }
@@ -156,25 +143,20 @@ public class Innovations {
                 if (c_in.in.id == ni.c_in.get().in.id && c_out.out.id == ni.c_out.get().out.id)
                     return ni.id;
 
-        // Check for pre-floating nodes
-        /*
-        int id = checkInnovation(n);
-        if (id != -1)
-            return id;
-        */
-
         // Innovation doesn't exist
         return -1;
     }
-    // Check for node innovation
-    public int checkInnovation (Node n) {
+
+    // TODO: Not consistent with other overloads. Probably a bad idea.
+    // Check if node innovation by id exists
+    public boolean checkInnovation (Node n) {
         // Look for existing node id
         for ( NodeInv ni : nodes )
             if (ni.id == n.id)
-                return ni.id;
+                return true;
 
         // Innovation doesn't exist
-        return -1;
+        return false;
     }
 
     // Check for connection innovation
@@ -268,6 +250,10 @@ public class Innovations {
 
     private int nextConnId;
     private int nextNodeId;
+
+    // Numbers before this belong to input/output nodes
+    private int start_connId;
+    private int start_nodeId;
 
     /********************************/
     // Container innovation classes //

@@ -8,7 +8,7 @@ public class TestGA {
             System.out.println("Running generation " + i + "...");
             System.out.println("Number of species: " + p.getNumSpecies());
             p.nextGen();
-            System.out.println("Most fit genome:\n\n" + p.getMostFit());
+            //System.out.println("Most fit genome:\n\n" + p.getMostFit());
             System.out.println("Top fitness: " + f.simulate( new Network(p.getMostFit()) ));
         }
 

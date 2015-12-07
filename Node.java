@@ -9,17 +9,16 @@ public class Node {
     }
     */
 
-    public Node (NodeType t, int id) {
-        this.id = id;
+    public Node (NodeType t) {
+        this.id = -1; // Temporary
         type = t;
     }
 
     // Default to hidden type
-    /*
     public Node () {
+        this.id = -1; // Temporary
         type = NodeType.HIDDEN;
     }
-    */
 
     public Node (int id) {
         this.id = id;

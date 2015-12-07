@@ -2,6 +2,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Population {
+    // TODO: Make a parameter class to hold all these ctor parameters and pass
+    // between classes easier.
+
+    // Constructor for first (user) population initialization
     public Population (int size,
                        double dis_rate,
                        double inter_rate,
@@ -13,8 +17,8 @@ public class Population {
                        Fitness f) {
         // Initialize population
         pop = new ArrayList<>();
-        this.inv_db = new Innovations();
         species = new ArrayList<Species>();
+        this.inv_db = new Innovations();
 
         this.f = f;
         this.dis_rate   = dis_rate;
@@ -26,6 +30,7 @@ public class Population {
         this.inputs  = inputs;
         this.outputs = outputs;
 
+        // TODO: Don't let the initial pop be uniform like this.
         // Create an initial species for all genomes of first generation to reproduce in
         Genome g = new Genome(inputs, outputs, inv_db);
         pop.add(g);
@@ -34,7 +39,6 @@ public class Population {
 
         // Speciate all genomes in population
         for (int i = 1; i < size; i++) {
-            //pop.add( new Genome(inputs, outputs, inv_db) );
             pop.add( new Genome(pop.get(0)) );
             g = pop.get(i);
             g.fitness = f.simulate( new Network(g) );
@@ -88,13 +92,6 @@ public class Population {
         /*
         System.out.println("Node innovation num: " + inv_db.getNodeInvNum());
         System.out.println("Conn innovation num: " + inv_db.getConnInvNum());
-        */
-
-        /*
-        for ( Genome g : pop ) {
-            //System.out.println("Mutating next genome");
-            mutate(g);
-        }
         */
 
         return new Population(pop,
@@ -211,22 +208,9 @@ public class Population {
         Node inp;
         Node out;
 
-        /*
-        for ( Node inp : input_layer ) {
-            for ( Node out : output_layer ) {
-                */
-        /*
-        System.out.println("inp size: " + input_layer.size());
-        System.out.println("out size: " + output_layer.size());
-        System.out.println("");
-        */
-
         // Predefinition avoids run away size changes in for loops
         int inp_size = input_layer.size();
         int out_size = output_layer.size();
-
-        int anNum = 0;
-        int acNum = 0;
 
         for (int i = 0; i < inp_size; i++) {
             inp = input_layer.get(i);
@@ -237,27 +221,14 @@ public class Population {
                 if ( r.nextDouble() < weight_rate ) {
                     // Chance to add a connection
                     if ( r.nextDouble() < link_rate ) {
-                        //System.out.println("Call addConnection!");
-                        acNum++;
                         g.addConnection(inp, out);
                     }
                     else if ( r.nextDouble() < node_rate ) {
-                        //System.out.println("Call addNode!");
-                        anNum++;
                         g.addNode(inp, out);
                     }
                 }
             }
         }
-
-        /*
-        if (acNum > 30 || anNum > 30) {
-            System.out.println("acNum: " + acNum);
-            System.out.println("anNum: " + anNum);
-            System.out.println("input_layer: " + inp_size);
-            System.out.println("output_layer: " + out_size);
-        }
-        */
     }
 
     // Mutation parameters

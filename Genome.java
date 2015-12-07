@@ -53,15 +53,17 @@ public class Genome {
         // Initialize input neurons
         input_nodes  = new ArrayList<Node>();
         for (int i = 0; i < inputs; i++) {
-            Node n = new Node(NodeType.INPUT, inv_id++);
-            addNode(n, true);
+            Node n = new Node(NodeType.INPUT);
+            n.id = inv_id++;
+            addNode(n);
         }
 
         // Initialize output neurons
         output_nodes = new ArrayList<Node>();
         for (int i = 0; i < outputs; i++) {
-            Node n = new Node(NodeType.OUTPUT, inv_id++);
-            addNode(n, true);
+            Node n = new Node(NodeType.OUTPUT);
+            n.id = inv_id++;
+            addNode(n);
         }
 
         Random r = new Random();
@@ -206,25 +208,15 @@ public class Genome {
         return addConnection(n1, n2);
     }
 
-    public void addConnection (ConnectionGene c, boolean db_enbl) {
-        if (db_enbl) {
-            addNode(c.in, db_enbl);
-            addNode(c.out, db_enbl);
-            addConnection(c.in, c.out);
-        }
-        else {
-            connections.add(c);
-
-            if (!nodes.contains(c.in))
-                addNode(c.in, db_enbl);
-            if (!nodes.contains(c.out))
-                addNode(c.out, db_enbl);
-        }
+    public void addConnection (ConnectionGene c) {
+        addNode(c.in);
+        addNode(c.out);
+        addConnection(c.in, c.out);
     }
 
-    public void addConnections (ArrayList<ConnectionGene> cs, boolean db_enbl) {
+    public void addConnections (ArrayList<ConnectionGene> cs) {
         for (ConnectionGene c : cs)
-            addConnection(c, db_enbl);
+            addConnection(c);
     }
 
     // Add node given two node ids
@@ -251,7 +243,7 @@ public class Genome {
     */
     // Add node given two nodes
     public Node addNode (Node n1, Node n2) {
-        Node n = new Node(0);
+        Node n = new Node();
 
         // Connect n1 to n
         ConnectionGene c1 = addConnection(n1, n);
@@ -259,7 +251,7 @@ public class Genome {
         ConnectionGene c2 = addConnection(n, n2);
 
         // If this is a new innovation, finish augmentation process
-        if (inv_db.addInnovation(Optional.of(c1), Optional.of(c2), n)) {
+        if (inv_db.addInnovation(c1, c2, n)) {
             // Add to local genome database
             nodes.add(n);
             hidden_nodes.add(n);
@@ -295,39 +287,23 @@ public class Genome {
         addNode(cg.in, cg.out);
     }
 
-    public void addNode (Node n, boolean db_enbl) {
-        if (db_enbl) {
-            if (inv_db.addInnovation(Optional.empty(), Optional.empty(), n)) {
-                nodes.add(n);
-                //System.out.println("New node: " + n.id);
+    // Add free floating node
+    public void addNode (Node n) {
+        inv_db.addInnovation(n);
 
-                switch (n.type) {
-                    case INPUT:
-                        input_nodes.add(n);
-                        break;
-                    case HIDDEN:
-                        hidden_nodes.add(n);
-                        break;
-                    case OUTPUT:
-                        output_nodes.add(n);
-                        break;
-                }
-            }
+        if ( !this.contains(n) ) {
+            nodes.add(n);
 
-            else {
-                nodes.add(n);
-
-                switch (n.type) {
-                    case INPUT:
-                        input_nodes.add(n);
-                        break;
-                    case HIDDEN:
-                        hidden_nodes.add(n);
-                        break;
-                    case OUTPUT:
-                        output_nodes.add(n);
-                        break;
-                }
+            switch (n.type) {
+                case INPUT:
+                    input_nodes.add(n);
+                    break;
+                case HIDDEN:
+                    hidden_nodes.add(n);
+                    break;
+                case OUTPUT:
+                    output_nodes.add(n);
+                    break;
             }
         }
     }
@@ -386,11 +362,19 @@ public class Genome {
         // Look for matching innovation number
         for ( ConnectionGene cg : connections )
             if (cg.in.id == c.in.id && cg.out.id == c.out.id) {
-                //System.out.println("Matching gene found!");
                 return true;
             }
         return false;
     }
+
+    public boolean contains (Node n) {
+        // Look for matching innovation number
+        for ( Node node : nodes )
+            if (n.id == node.id)
+                return true;
+        return false;
+    }
+
     /*
     public boolean contains (ConnectionGene c) {
         // Look for matching innovation number
@@ -520,8 +504,6 @@ public class Genome {
     private Innovations inv_db;
 
     private Genome getSmallest (Genome g) {
-        //System.out.println(g.connections.size() + "\n");
-        //System.out.println(this.connections.size());
         if (g.connections.size() < this.connections.size())
             return g;
         return this;
