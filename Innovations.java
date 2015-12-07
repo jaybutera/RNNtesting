@@ -10,13 +10,46 @@ public class Innovations {
         nextNodeId = 0;
     }
 
+    public Innovations (int start_connId, int start_nodeId) {
+        connections = new ArrayList<ConnectionInv>();
+        nodes = new ArrayList<NodeInv>();
+
+        nextConnId = start_connId;
+        nextNodeId = start_nodeId;
+    }
+
     // Add node innovation
     public boolean addInnovation (Optional<ConnectionGene> c1, Optional<ConnectionGene> c2, Node n) {
         // TODO: Add support for one connection parameter provided
 
+        // Check if node is input/output
+        /*
+        if (n.type == NodeType.INPUT || n.type == NodeType.OUTPUT) {
+            //System.out.println("Found an inp/out node");
+            int inv = checkInnovation(n);
+
+            // Innovation is novel
+            if (inv == -1) {
+                //inv = nodeInvNum();
+
+                // Add node to database
+                nodes.add( new NodeInv(n.id, Optional.empty(), Optional.empty()) );
+
+                // Assign genome node a new id
+                //n.id = inv;
+
+                return true;
+            }
+            // TODO: Add case for if it's not novel
+            return false;
+        }
+        */
+
+        if (
         // If both connections are provided
         if (c1.isPresent() && c2.isPresent()) {
-            int inv_id = checkInnovation(c1.get(), c2.get());
+            int inv_id = checkInnovation(c1.get(), c2.get(), n);
+            System.out.println("Found a hidden node: " + inv_id);
 
             // If innovation is novel, add to database
             if ( inv_id == -1) {
@@ -37,6 +70,10 @@ public class Innovations {
             else {
                 // Assign connection ids to existing innovation ids
                 NodeInv ni = getNodeInvById(inv_id);
+
+                System.out.println(c1.get());
+                System.out.println(c1.get());
+
                 c1.get().innovation = ni.c_in.get().innovation;
                 c2.get().innovation = ni.c_out.get().innovation;
 
@@ -50,16 +87,26 @@ public class Innovations {
             return true;
         }
 
-        // If no connections are provided (assume laster support for 1)
+        // If no connections are provided (assume later support for 1)
         else {
-            // Floating nodes are always novel innovations
-            int inv = nodeInvNum();
+            System.out.println("Found a hidden node");
+            // Check for pre-foating nodes
+            int inv = checkInnovation(n);
 
-            // Add node to database
-            nodes.add( new NodeInv(inv, Optional.empty(), Optional.empty()) );
+            // Innovation is novel
+            if (inv == -1) {
+                inv = nodeInvNum();
 
-            // Assign genome node a new id
-            n.id = inv;
+                // Add node to database
+                nodes.add( new NodeInv(inv, Optional.empty(), Optional.empty()) );
+
+                // Assign genome node a new id
+                n.id = inv;
+            }
+            // Innovation exists
+            else {
+                n.id = inv;
+            }
 
             // New innovation
             return true;
@@ -102,12 +149,29 @@ public class Innovations {
     }
 
     // Check for node innovation
-    public int checkInnovation (ConnectionGene c_in, ConnectionGene c_out) {
+    public int checkInnovation (ConnectionGene c_in, ConnectionGene c_out, Node n) {
         // Look for a node innovation with matching in and out node ids
         for ( NodeInv ni : nodes )
             if ( ni.c_in.isPresent() && ni.c_out.isPresent() )
                 if (c_in.in.id == ni.c_in.get().in.id && c_out.out.id == ni.c_out.get().out.id)
                     return ni.id;
+
+        // Check for pre-floating nodes
+        /*
+        int id = checkInnovation(n);
+        if (id != -1)
+            return id;
+        */
+
+        // Innovation doesn't exist
+        return -1;
+    }
+    // Check for node innovation
+    public int checkInnovation (Node n) {
+        // Look for existing node id
+        for ( NodeInv ni : nodes )
+            if (ni.id == n.id)
+                return ni.id;
 
         // Innovation doesn't exist
         return -1;
@@ -162,6 +226,14 @@ public class Innovations {
             str += ni.id + "\n" + ni.c_in + "--> " + ni.c_out + "\n";
 
         return str;
+    }
+
+    // For debugging
+    public int getNodeInvNum () {
+        return nextNodeId;
+    }
+    public int getConnInvNum () {
+        return nextConnId;
     }
 
     private NodeInv getNodeInvById (int id) {

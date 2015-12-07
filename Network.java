@@ -101,10 +101,14 @@ public class Network {
 
     public Double[] step (Double[] inps) {
         // Temporary error handling
+        /*
         if (inputNeurons.length != inps.length) {
             System.out.println("Incompatible input vector length");
             return new Double[] {0.0};
         }
+        */
+
+        assert inputNeurons.length == inps.length;
 
         inputNeurons = Arrays.copyOf(inps, inps.length);
 

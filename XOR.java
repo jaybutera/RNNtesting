@@ -3,18 +3,22 @@ public class XOR extends Fitness {
         Double[][] outs = new Double[outData.length][1];
 
         try {
-            for (int i = 0; i < inData.length; i++)
+            //System.out.println("outputs:");
+            for (int i = 0; i < inData.length; i++) {
                 outs[i] = n.step(inData[i]);
+                //System.out.print(outs[i][0] + " : ");
+            }
         }
         catch (Exception e) {
             System.out.println("Invalid network\n" + n);
         }
 
-        Double sum = 0.0;
+        Double fitness = 0.0;
         for (int i = 0; i < outs.length; i++)
-            sum += Math.abs(outs[i][0] - outData[i]);
+            fitness += Math.abs(outs[i][0] - outData[i]);
 
-        return sum;
+        //System.out.println("Fitness - " + fitness);
+        return fitness;
     }
 
     private Double[][] inData = {{1.,1.},

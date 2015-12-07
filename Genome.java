@@ -48,18 +48,20 @@ public class Genome {
 
         this.inv_db = inv_db;
 
+        int inv_id = 0;
+
         // Initialize input neurons
         input_nodes  = new ArrayList<Node>();
         for (int i = 0; i < inputs; i++) {
-            Node n = new Node(NodeType.INPUT, 0);
-            addNode(n);
+            Node n = new Node(NodeType.INPUT, inv_id++);
+            addNode(n, true);
         }
 
         // Initialize output neurons
         output_nodes = new ArrayList<Node>();
         for (int i = 0; i < outputs; i++) {
-            Node n = new Node(NodeType.OUTPUT, 0);
-            addNode(n);
+            Node n = new Node(NodeType.OUTPUT, inv_id++);
+            addNode(n, true);
         }
 
         Random r = new Random();
@@ -204,15 +206,25 @@ public class Genome {
         return addConnection(n1, n2);
     }
 
-    public void addConnection (ConnectionGene c) {
-        addNode(c.in);
-        addNode(c.out);
-        addConnection(c.in, c.out);
+    public void addConnection (ConnectionGene c, boolean db_enbl) {
+        if (db_enbl) {
+            addNode(c.in, db_enbl);
+            addNode(c.out, db_enbl);
+            addConnection(c.in, c.out);
+        }
+        else {
+            connections.add(c);
+
+            if (!nodes.contains(c.in))
+                addNode(c.in, db_enbl);
+            if (!nodes.contains(c.out))
+                addNode(c.out, db_enbl);
+        }
     }
 
-    public void addConnections (ArrayList<ConnectionGene> cs) {
+    public void addConnections (ArrayList<ConnectionGene> cs, boolean db_enbl) {
         for (ConnectionGene c : cs)
-            addConnection(c);
+            addConnection(c, db_enbl);
     }
 
     // Add node given two node ids
@@ -283,20 +295,39 @@ public class Genome {
         addNode(cg.in, cg.out);
     }
 
-    public void addNode (Node n) {
-        if (inv_db.addInnovation(Optional.empty(), Optional.empty(), n)) {
-            nodes.add(n);
+    public void addNode (Node n, boolean db_enbl) {
+        if (db_enbl) {
+            if (inv_db.addInnovation(Optional.empty(), Optional.empty(), n)) {
+                nodes.add(n);
+                //System.out.println("New node: " + n.id);
 
-            switch (n.type) {
-                case INPUT:
-                    input_nodes.add(n);
-                    break;
-                case HIDDEN:
-                    hidden_nodes.add(n);
-                    break;
-                case OUTPUT:
-                    output_nodes.add(n);
-                    break;
+                switch (n.type) {
+                    case INPUT:
+                        input_nodes.add(n);
+                        break;
+                    case HIDDEN:
+                        hidden_nodes.add(n);
+                        break;
+                    case OUTPUT:
+                        output_nodes.add(n);
+                        break;
+                }
+            }
+
+            else {
+                nodes.add(n);
+
+                switch (n.type) {
+                    case INPUT:
+                        input_nodes.add(n);
+                        break;
+                    case HIDDEN:
+                        hidden_nodes.add(n);
+                        break;
+                    case OUTPUT:
+                        output_nodes.add(n);
+                        break;
+                }
             }
         }
     }

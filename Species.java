@@ -122,11 +122,18 @@ public class Species {
     }
 
     private Genome crossover (Genome g1, Genome g2) {
-        Genome child = new Genome(input_size, output_size, inv_db);
+        //Genome child = new Genome(input_size, output_size, inv_db);
+
+        // Start from standard template
+        Genome child = new Genome(g1);
+        child.flush();
 
         // Assign all matching connection genes
         ArrayList<ConnectionGene> matching = g1.getMatching(g2);
-        child.addConnections(matching);
+        System.out.println("Matching: " + matching);
+        child.addConnections(matching, false);
+        System.out.println("Matching: " + matching);
+        //chilld.connections.addAll(matching);
 
         // If parents have equal fitness, randomly match excess genes
         if (g1.fitness == g2.fitness) {
@@ -143,21 +150,29 @@ public class Species {
             // Randomly assign excess genes to child
             for ( ConnectionGene c : excess )
                 if ( r.nextBoolean() )
-                    child.addConnection(c);
+                    child.addConnection(c, false);
             for ( ConnectionGene c : disjoint )
                 if ( r.nextBoolean() )
-                    child.addConnection(c);
+                    child.addConnection(c, false);
         }
 
         // Otherwise child inherits excess/disjoint genes of most fit parent
         else if (g1.fitness > g2.fitness) {
-            child.addConnections( g1.getExcess(g2) );
-            child.addConnections( g1.getDisjoint(g2) );
+            child.addConnections( g1.getExcess(g2), false );
+            child.addConnections( g1.getDisjoint(g2), false );
         }
         else if (g1.fitness < g2.fitness) {
-            child.addConnections( g2.getExcess(g1) );
-            child.addConnections( g2.getDisjoint(g1) );
+            child.addConnections( g2.getExcess(g1), false );
+            child.addConnections( g2.getDisjoint(g1), false );
         }
+        /*
+        if (child.inputSize() != input_size) {
+            System.out.println("in size: " + child.inputSize());
+            System.out.println("out size: " + child.outputSize());
+
+            System.out.println(child);
+        }
+        */
 
         // TODO: Make fitness class an interface so it doesn't have to be passed
         // around so much

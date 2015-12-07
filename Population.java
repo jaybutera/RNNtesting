@@ -28,13 +28,14 @@ public class Population {
 
         // Create an initial species for all genomes of first generation to reproduce in
         Genome g = new Genome(inputs, outputs, inv_db);
-        pop.add( new Genome(inputs, outputs, inv_db) );
+        pop.add(g);
         g.fitness = f.simulate( new Network(g) );
         species.add( new Species(g, dis_rate, link_rate, node_rate, f, inv_db) );
 
         // Speciate all genomes in population
         for (int i = 1; i < size; i++) {
-            pop.add( new Genome(inputs, outputs, inv_db) );
+            //pop.add( new Genome(inputs, outputs, inv_db) );
+            pop.add( new Genome(pop.get(0)) );
             g = pop.get(i);
             g.fitness = f.simulate( new Network(g) );
             species.get(0).add(g);
