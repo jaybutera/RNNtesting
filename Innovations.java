@@ -103,7 +103,7 @@ public class Innovations {
         if (inv_id == -1) {
             int inv = connInvNum();
             c.innovation = inv;
-            System.out.println("New connection in db: " + inv);
+            //System.out.println("New connection in db: " + inv);
             connections.add( new ConnectionInv(inv, c) );
         }
         else {
@@ -151,9 +151,11 @@ public class Innovations {
                 return ci.id;
             }
 
+        /*
         System.out.println("No link innovation match found!");
         System.out.println("c.in.id: " + c.in.id);
         System.out.println("c.out.id: " + c.out.id);
+        */
 
         // Innovation doesn't exist
         return -1;

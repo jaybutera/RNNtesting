@@ -31,8 +31,8 @@ public class Population {
         this.outputs = outputs;
 
         // TODO: Don't let the initial pop be uniform like this.
-        // Create an initial species for all genomes of first generation to reproduce in
-        Genome g = new Genome(inputs, outputs, inv_db);
+        // Create an initial species for all genomes of first generation to reproduce in (randomly generate initial weights)
+        Genome g = new Genome(inputs, outputs, true, inv_db);
         pop.add(g);
         g.fitness = f.simulate( new Network(g) );
         species.add( new Species(g, dis_rate, link_rate, node_rate, f, inv_db) );
@@ -71,9 +71,10 @@ public class Population {
         for (int i = 0; i < pop.size(); i++) {
             Genome g = pop.get(i);
             //System.out.print("|" + g.size());
-            g.fitness = f.simulate( new Network(g) );
+            //g.fitness = f.simulate( new Network(g) );
             speciate(g);
         }
+        System.out.println("Number of species: " + species.size());
     }
 
     public void addGenome (Genome g) {
@@ -155,6 +156,11 @@ public class Population {
     // Temporary method for debugging
     public void printInvDB () {
         System.out.println(inv_db);
+    }
+
+    // For debugging
+    public Innovations getInvDb () {
+        return inv_db;
     }
 
     public void mutate(Genome g) {

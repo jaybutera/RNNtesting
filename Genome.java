@@ -28,6 +28,15 @@ public class Genome {
                    ArrayList<Node> hidden,
                    ArrayList<Node> outputs,
                    ArrayList<ConnectionGene> connections) {
+        for ( Node n : inputs )
+            addNode(n);
+        for ( Node n : hidden )
+            addNode(n);
+        for ( Node n : outputs )
+            addNode(n);
+        for ( ConnectionGene cg : connections )
+            addConnection(cg);
+        /*
         this.input_nodes  = inputs;
         this.hidden_nodes = hidden;
         this.output_nodes = outputs;
@@ -37,10 +46,11 @@ public class Genome {
         this.nodes = inputs;
         nodes.addAll(hidden);
         nodes.addAll(outputs);
+        */
     }
 
     // Randomly generate minimal genome (perceptron structure)
-    public Genome (int inputs, int outputs, Innovations inv_db) {
+    public Genome (int inputs, int outputs, boolean randGen, Innovations inv_db) {
         // Initialize empty lists
         connections  = new ArrayList<ConnectionGene>();
         nodes        = new ArrayList<Node>();
@@ -66,22 +76,25 @@ public class Genome {
             addNode(n);
         }
 
-        Random r = new Random();
+        // Randomly generate weights if requested
+        if (randGen) {
+            Random r = new Random();
 
-        // Make at least one connection
-        addConnection(input_nodes.get(r.nextInt(inputs)), output_nodes.get(r.nextInt(outputs)));
+            // Make at least one connection
+            addConnection(input_nodes.get(r.nextInt(inputs)), output_nodes.get(r.nextInt(outputs)));
 
-        // Chance to make each possible link between input and output nodes
-        // with probability .5
-        /*
-        for (int i = 0; i < inputs; i++)
-            for (int o = 0; o < outputs; o++)
-                if ( new Random().nextBoolean() )
-                    addConnection(input_nodes.get(i).id, output_nodes.get(o).id);
-                    */
-        int links = new Random().nextInt(inputs*outputs-1);
-        for (int i = 0; i < links; i++)
-            addConnection();
+            // Chance to make each possible link between input and output nodes
+            // with probability .5
+            /*
+            for (int i = 0; i < inputs; i++)
+                for (int o = 0; o < outputs; o++)
+                    if ( new Random().nextBoolean() )
+                        addConnection(input_nodes.get(i).id, output_nodes.get(o).id);
+                        */
+            int links = new Random().nextInt(inputs*outputs-1);
+            for (int i = 0; i < links; i++)
+                addConnection();
+        }
     }
 
     // Copy constructor
@@ -117,6 +130,8 @@ public class Genome {
                                                n2,
                                                weight,
                                                0);
+
+        //System.out.println("Add connection: [" + n1.id + "]-[" + n2.id + "]");
 
         // If this is a new innovation, add connection
         if (inv_db.addInnovation(cg))

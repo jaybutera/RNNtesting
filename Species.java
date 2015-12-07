@@ -89,7 +89,7 @@ public class Species {
         //System.out.println("New species size: " + genomes.size());
 
         // Make genome the new rep if it has the highest fitness
-        if (g.fitness < representative.fitness) {
+        if (adjFitness(g) < adjFitness(representative)) {
             representative = g;
         }
     }
@@ -102,7 +102,6 @@ public class Species {
         // Mate each adjacent genome
         for (int i = 1; i < genomes.size(); i++)
             children.add( crossover(genomes.get(i-1), genomes.get(i)) );
-        //System.out.println("Children: " + children.size());
 
         // Add a final genome to keep same population size
         children.add( crossover(genomes.get(0), genomes.get(genomes.size()-1)) );
@@ -110,30 +109,37 @@ public class Species {
         // Replace pop with next generation
         genomes = children;
 
+        // Find new representative
+        updateRep();
+
         return genomes;
     }
 
     private Genome updateRep () {
         for ( Genome g : genomes )
-            if (g.fitness < representative.fitness)
+            if (adjFitness(g) < adjFitness(representative))
                 representative = g;
 
         return representative;
     }
 
-    private Genome crossover (Genome g1, Genome g2) {
-        Genome child = new Genome(input_size, output_size, inv_db);
+    // TODO: public for debugging. Make private
+    public Genome crossover (Genome g1, Genome g2) {
+        // Create empty child, no random weights
+        Genome child = new Genome(input_size, output_size, false, inv_db);
 
         // Start from standard template
         //Genome child = new Genome(g1);
-        //child.flush();
 
         // Assign all matching connection genes
         ArrayList<ConnectionGene> matching = g1.getMatching(g2);
         child.addConnections(matching);
 
+        double g1_fit = adjFitness(g1);
+        double g2_fit = adjFitness(g2);
+
         // If parents have equal fitness, randomly match excess genes
-        if (g1.fitness == g2.fitness) {
+        if (g1_fit == g2_fit) {
             Random r = new Random();
 
             // Get excess from both parents
@@ -154,11 +160,11 @@ public class Species {
         }
 
         // Otherwise child inherits excess/disjoint genes of most fit parent
-        else if (g1.fitness > g2.fitness) {
+        else if (g1_fit > g2_fit) {
             child.addConnections( g1.getExcess(g2) );
             child.addConnections( g1.getDisjoint(g2) );
         }
-        else if (g1.fitness < g2.fitness) {
+        else if (g1_fit < g2_fit) {
             child.addConnections( g2.getExcess(g1) );
             child.addConnections( g2.getDisjoint(g1) );
         }
@@ -212,6 +218,10 @@ public class Species {
         }
     }
 
+    public double adjFitness (Genome g) {
+        return g.fitness / genomes.size();
+    }
+
     // For debugging. Should take this out soon.
     public Genome getRep () {
         return representative;
@@ -230,11 +240,6 @@ public class Species {
 
         Node inp;
         Node out;
-
-        /*
-        for ( Node inp : input_layer ) {
-            for ( Node out : output_layer ) {
-                */
 
         // Predefinition avoids run away size changes in for loops
         int inp_size = input_layer.size();
