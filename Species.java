@@ -79,7 +79,6 @@ public class Species {
         System.out.println("Disjoint size: " + g.getDisjoint(representative).size());
         System.out.println("Weight diff: " + g.weightDiff(representative));
         */
-        //System.out.println("\nCompatibility : " + x);
         return x;
     }
 
@@ -89,33 +88,78 @@ public class Species {
         //System.out.println("New species size: " + genomes.size());
 
         // Make genome the new rep if it has the highest fitness
+        /*
         if (adjFitness(g) < adjFitness(representative)) {
             representative = g;
         }
+        */
+    }
+
+    public void flush () {
+        //genomes = new ArrayList<Genome>();
+        genomes.clear();
+    }
+
+    public double getSpeciesFit () {
+        return genomes.stream()
+                      .mapToDouble(s -> adjFitness(s))
+                      .sum();
     }
 
     public ArrayList<Genome> reproduce () {
+        // Check for oversized genomes
+        int thresh = 100;
+        int deleted = 0;
+
+        /*
+        Genome g;
+        for (int i = 0; i < genomes.size(); i++) {
+            g = genomes.get(i);
+            if ( g.hiddenSize() > thresh ) {
+                System.out.println("Genome to large, removing: " + g.hiddenSize());
+                genomes.remove(g);
+                deleted++;
+            }
+        }
+        */
+
+        // Return empty if no genomes in species
+        if ( genomes.isEmpty() )
+            return genomes;
+
         ArrayList<Genome> children = new ArrayList<Genome>();
 
         // TODO: Initial reproduction algorithm, use factorial formulation in
         // future.
         // Mate each adjacent genome
+        //for (int i = 1; i < genomes.size(); i++)
+        //int nextGen_size = getSpeciesFit() * genomes.size();
         for (int i = 1; i < genomes.size(); i++)
-            children.add( crossover(genomes.get(i-1), genomes.get(i)) );
+            children.add( crossover(genomes.get(i-1), representative) );
+            //children.add( crossover(genomes.get(i-1), genomes.get(i)) );
 
         // Add a final genome to keep same population size
         children.add( crossover(genomes.get(0), genomes.get(genomes.size()-1)) );
 
+        // Compensate for oversized genomes
+        /*
+        for (int i = 1; i < deleted; i++)
+            children.add( crossover(genomes.get(i-1), genomes.get(i)) );
+        */
+
+        // Get rep from genomes to guide next generation speciation
+        updateRep();
+
         // Replace pop with next generation
         genomes = children;
 
-        // Find new representative
-        updateRep();
+        // Find new representative from children
+        //updateRep();
 
         return genomes;
     }
 
-    private Genome updateRep () {
+    public Genome updateRep () {
         for ( Genome g : genomes )
             if (adjFitness(g) < adjFitness(representative))
                 representative = g;
@@ -168,17 +212,6 @@ public class Species {
             child.addConnections( g2.getExcess(g1) );
             child.addConnections( g2.getDisjoint(g1) );
         }
-        /*
-        if (child.inputSize() != input_size) {
-            System.out.println("in size: " + child.inputSize());
-            System.out.println("out size: " + child.outputSize());
-
-            System.out.println(child);
-        }
-        */
-
-        // TODO: Make fitness class an interface so it doesn't have to be passed
-        // around so much
 
         // Apply mutations
         mutate(child);
@@ -192,7 +225,7 @@ public class Species {
     public void mutate(Genome g) {
         Random r = new Random();
 
-        double weight_val_rate = .50;
+        double weight_val_rate = .10;
 
         // Mutations for input to hidden connections
         perturbLinks(g.input_nodes, g.hidden_nodes, g);
@@ -214,7 +247,8 @@ public class Species {
 
             // Chance to enable or disable (flip) connection gene
             if ( r.nextDouble() < dis_rate )
-                cg = cg.flipGene();
+                cg.enabled = !cg.enabled;
+                //cg = cg.flipGene();
         }
     }
 
@@ -225,6 +259,10 @@ public class Species {
     // For debugging. Should take this out soon.
     public Genome getRep () {
         return representative;
+    }
+
+    public int size () {
+        return genomes.size();
     }
 
     /***************/
@@ -249,15 +287,15 @@ public class Species {
             for (int j = 0; j < out_size; j++) {
                 out = output_layer.get(j);
 
+                //if ( r.nextDouble() < link_rate ) {
+                // Chance to add a connection
                 if ( r.nextDouble() < link_rate ) {
-                    // Chance to add a connection
-                    if ( r.nextDouble() < link_rate ) {
-                        g.addConnection(inp, out);
-                    }
-                    else if ( r.nextDouble() < node_rate ) {
-                        g.addNode(inp, out);
-                    }
+                    g.addConnection(inp, out);
                 }
+                else if ( r.nextDouble() < node_rate ) {
+                    g.addNode(inp, out);
+                }
+                //}
             }
         }
     }
@@ -276,7 +314,7 @@ public class Species {
     private double c3;
 
     // Mutation parameters
-    double dis_rate;
-    double link_rate;
-    double node_rate;
+    private double dis_rate;
+    private double link_rate;
+    private double node_rate;
 }

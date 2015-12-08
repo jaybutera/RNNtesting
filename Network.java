@@ -19,8 +19,8 @@ public class Network {
         hiddenNeurons = new Double[g.hiddenSize()];
 
         // Fill hidden and output neurons with hot vector 1
-        Arrays.fill(hiddenNeurons, 1.0);
-        Arrays.fill(outputNeurons, 1.0);
+        Arrays.fill(hiddenNeurons, 0.0);
+        Arrays.fill(outputNeurons, 0.0);
 
 
 
@@ -76,8 +76,8 @@ public class Network {
         outputNeurons = new Double[outputWeights.length]; // Lx1
 
         // Fil hidden and output neurons with hot vector 1
-        Arrays.fill(hiddenNeurons, 1.0);
-        Arrays.fill(outputNeurons, 1.0);
+        Arrays.fill(hiddenNeurons, 0.0);
+        Arrays.fill(outputNeurons, 0.0);
 
         // Initialize weights
         this.inputWeights  = new Double[inputWeights.length][inputWeights[0].length];   // NxK
@@ -100,14 +100,7 @@ public class Network {
     }
 
     public Double[] step (Double[] inps) {
-        // Temporary error handling
-        /*
-        if (inputNeurons.length != inps.length) {
-            System.out.println("Incompatible input vector length");
-            return new Double[] {0.0};
-        }
-        */
-
+        // Check for incompatible input vector length
         assert inputNeurons.length == inps.length;
 
         inputNeurons = Arrays.copyOf(inps, inps.length);
@@ -261,7 +254,8 @@ public class Network {
 
         // Compute sigmoid
         for (int i = 0; i < inp.length; i++)
-            vec[i] = 1 / (1 + Math.exp(-inp[i]));
+            //vec[i] = (double)Math.round(inp[i]); // Step
+            vec[i] = 1 / (1 + Math.exp(-inp[i])); // Sigmoid
 
         return vec;
     }

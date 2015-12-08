@@ -1,9 +1,8 @@
 public class XOR extends Fitness {
     public Double simulate (Network n) {
-        Double[][] outs = new Double[outData.length][1];
+        outs = new Double[outData.length][1];
 
         try {
-            //System.out.println("outputs:");
             for (int i = 0; i < inData.length; i++) {
                 outs[i] = n.step(inData[i]);
                 //System.out.print(outs[i][0] + " : ");
@@ -18,12 +17,29 @@ public class XOR extends Fitness {
             fitness += Math.abs(outs[i][0] - outData[i]);
 
         //System.out.println("Fitness - " + fitness);
-        return fitness;
+        return Math.pow(fitness,2);
     }
 
-    private Double[][] inData = {{1.,1.},
+    public Double[] getOuts () {
+        Double[] x = new Double[outs.length];
+
+        // Transpose outs
+        for (int i = 0; i < outs.length; i++)
+            x[i] = outs[i][0];
+
+        return x;
+    }
+
+    private Double[][] outs; // Calculated output
+    private Double[][] inData = {{0.,0.},
                                  {1.,0.},
                                  {0.,1.},
-                                 {0.,0.}};
+                                 {1.,1.}};
+    /*
+    private Double[][] inData = {{1.,1.,1.},
+                                 {1.,1.,0.},
+                                 {1.,0.,1.},
+                                 {1.,0.,0.}};
+                                 */
     private Double[] outData = {0.,1.,1.,0.};
 }

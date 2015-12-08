@@ -52,29 +52,26 @@ public class Population {
                         double node_rate,
                         double link_rate,
                         double compat_thresh,
+                        ArrayList<Species> species,
                         Innovations inv_db,
                         Fitness f) {
         this.pop = pop;
         this.inv_db = inv_db;
-        species = new ArrayList<Species>();
-        gen_mutations = new ArrayList<ConnectionGene>();
+        //species = new ArrayList<Species>();
         this.f = f;
         this.dis_rate   = dis_rate;
         this.inter_rate = inter_rate;
         this.node_rate  = node_rate;
         this.link_rate  = link_rate;
         this.compatThresh= compat_thresh;
+        this.species    = species;
 
         // Speciate all genomes in population
-        //System.out.println("Calculating fitness and speciating...");
-        //for ( Genome g : pop )
-        for (int i = 0; i < pop.size(); i++) {
-            Genome g = pop.get(i);
-            //System.out.print("|" + g.size());
-            //g.fitness = f.simulate( new Network(g) );
+        for ( Genome g : pop ) {
+            System.out.print("|" + g.size());
             speciate(g);
         }
-        System.out.println("Number of species: " + species.size());
+        System.out.println("\nNumber of species: " + species.size());
     }
 
     public void addGenome (Genome g) {
@@ -87,8 +84,19 @@ public class Population {
         pop.clear();
 
         // Accumulate genomes from species reproduction
-        for ( Species s : species )
+        //System.out.println("size: " + species.size());
+        //System.out.println("size of that: " + species.get(0).size());
+        //for ( Species s : species ) {
+        Species s;
+        for (int i = 0; i < species.size(); i++) {
+            s = species.get(i);
+            // Remove obsolete species
+            if (s.size() < 1)
+                species.remove(s);
+
             pop.addAll( s.reproduce() );
+            s.flush(); // Remove all genomes for respeciation (NEAT style)
+        }
 
         /*
         System.out.println("Node innovation num: " + inv_db.getNodeInvNum());
@@ -101,6 +109,7 @@ public class Population {
                               node_rate,
                               link_rate,
                               compatThresh,
+                              species,
                               inv_db,
                               f);
     }
@@ -250,7 +259,6 @@ public class Population {
 
     private ArrayList<Genome> pop;
     private ArrayList<Species> species;
-    private ArrayList<ConnectionGene> gen_mutations;
     private Fitness f;
     private Innovations inv_db;
 }

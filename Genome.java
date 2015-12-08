@@ -487,13 +487,13 @@ public class Genome {
         str += "Input Node IDs:\n";
         for (Node n : input_nodes)
             str += n.id + " ";
-        str += "\nHidden Node IDs:\n";
+        str += "\nHidden Node IDs: " + hidden_nodes.size() + "\n";
         for (Node n : hidden_nodes)
             str += n.id + " ";
         str += "\nOutput Node IDs:\n";
         for (Node n : output_nodes)
             str += n.id + " ";
-        str += "\n\nConnections:\n\n";
+        str += "\n\nConnections: " + connections.size() + "\n\n";
         for (ConnectionGene g : connections)
             str += g + "\n";
 

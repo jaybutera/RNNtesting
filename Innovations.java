@@ -94,8 +94,13 @@ public class Innovations {
     // Add connection innovation
     public boolean addInnovation (ConnectionGene c) {
         // Don't allow innovations with uninitialized nodes
-        if (c.in.id == -1 || c.out.id == -1)
+        if (c.in.id == -1 || c.out.id == -1) {
+            /*
+            System.out.println("c.in.id: " + c.in.id);
+            System.out.println("c.out.id: " + c.out.id);
+            */
             return false;
+        }
 
         int inv_id = checkInnovation(c);
 
