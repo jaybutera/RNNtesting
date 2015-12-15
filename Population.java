@@ -86,7 +86,12 @@ public class Population {
         // Accumulate genomes from species reproduction
         //System.out.println("size: " + species.size());
         //System.out.println("size of that: " + species.get(0).size());
-        //for ( Species s : species ) {
+
+        // Get total species fitness as a parameter for reproduction
+        Double total_fit = 0.0;
+        for (Species s : species )
+            total_fit += s.updateFitness();
+
         Species s;
         for (int i = 0; i < species.size(); i++) {
             s = species.get(i);
@@ -94,7 +99,7 @@ public class Population {
             if (s.size() < 1)
                 species.remove(s);
 
-            pop.addAll( s.reproduce() );
+            pop.addAll( s.reproduce(total_fit) );
             s.flush(); // Remove all genomes for respeciation (NEAT style)
         }
 
@@ -143,14 +148,21 @@ public class Population {
     }
 
     public Genome getMostFit () {
-        Genome top = pop.get(0);
+        try {
+            Genome top = pop.get(0);
 
-        for ( Genome g : pop ) {
-            if (g.fitness < top.fitness)
-                top = g;
+            for ( Genome g : pop ) {
+                if (g.fitness > top.fitness)
+                    top = g;
+            }
+
+            return top;
+        }
+        catch (IndexOutOfBoundsException e) {
+            System.err.println("IndexOutOfBoundsException: " + e.getMessage());
         }
 
-        return top;
+        return null;
     }
 
     public int getNumSpecies () {

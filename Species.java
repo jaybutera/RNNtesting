@@ -96,17 +96,22 @@ public class Species {
                       .sum();
     }
 
-    public ArrayList<Genome> reproduce () {
+    public ArrayList<Genome> reproduce (double total_fit) {
         // Return empty if no genomes in species
         if ( genomes.isEmpty() )
             return genomes;
 
         ArrayList<Genome> children = new ArrayList<Genome>();
 
+        // Determine size of next generation species population
+        updateFitness();
+        int pop_size = (int) Math.round(updateFitness() * genomes.size() / total_fit);
+        System.out.println("New species size: " + pop_size);
+
         // TODO: Initial reproduction algorithm, use factorial formulation in
         // future.
         // Mate each adjacent genome
-        for (int i = 1; i < genomes.size(); i++)
+        for (int i = 1; i < pop_size; i++)
             children.add( crossover(genomes.get(i-1), representative) );
 
         // Add a final genome to keep same population size
@@ -124,10 +129,18 @@ public class Species {
     // Find new representative for species
     public Genome updateRep () {
         for ( Genome g : genomes )
-            if (adjFitness(g) < adjFitness(representative))
+            if (adjFitness(g) > adjFitness(representative))
                 representative = g;
 
         return representative;
+    }
+
+    public Double updateFitness () {
+        avg_fit = genomes.stream().map(g -> g.fitness)
+                                  .mapToDouble(Double::doubleValue)
+                                  .sum();
+
+        return avg_fit;
     }
 
     // TODO: public for debugging. Make private
@@ -224,6 +237,10 @@ public class Species {
         return representative;
     }
 
+    public Double getAvgFit () {
+        return avg_fit;
+    }
+
     public int size () {
         return genomes.size();
     }
@@ -280,4 +297,7 @@ public class Species {
     private double dis_rate;
     private double link_rate;
     private double node_rate;
+
+    // Species average fitness
+    private Double avg_fit;
 }

@@ -17,7 +17,7 @@ public class XOR extends Fitness {
             fitness += Math.abs(outs[i][0] - outData[i]);
 
         //System.out.println("Fitness - " + fitness);
-        return Math.pow(fitness,2);
+        return Math.pow(outs.length - fitness,2);
     }
 
     public Double[] getOuts () {
