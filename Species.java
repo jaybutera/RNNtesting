@@ -84,19 +84,9 @@ public class Species {
 
     public void add (Genome g) {
         genomes.add(g);
-        //System.out.println("Genome added to species");
-        //System.out.println("New species size: " + genomes.size());
-
-        // Make genome the new rep if it has the highest fitness
-        /*
-        if (adjFitness(g) < adjFitness(representative)) {
-            representative = g;
-        }
-        */
     }
 
     public void flush () {
-        //genomes = new ArrayList<Genome>();
         genomes.clear();
     }
 
@@ -107,22 +97,6 @@ public class Species {
     }
 
     public ArrayList<Genome> reproduce () {
-        // Check for oversized genomes
-        int thresh = 100;
-        int deleted = 0;
-
-        /*
-        Genome g;
-        for (int i = 0; i < genomes.size(); i++) {
-            g = genomes.get(i);
-            if ( g.hiddenSize() > thresh ) {
-                System.out.println("Genome to large, removing: " + g.hiddenSize());
-                genomes.remove(g);
-                deleted++;
-            }
-        }
-        */
-
         // Return empty if no genomes in species
         if ( genomes.isEmpty() )
             return genomes;
@@ -132,20 +106,11 @@ public class Species {
         // TODO: Initial reproduction algorithm, use factorial formulation in
         // future.
         // Mate each adjacent genome
-        //for (int i = 1; i < genomes.size(); i++)
-        //int nextGen_size = getSpeciesFit() * genomes.size();
         for (int i = 1; i < genomes.size(); i++)
             children.add( crossover(genomes.get(i-1), representative) );
-            //children.add( crossover(genomes.get(i-1), genomes.get(i)) );
 
         // Add a final genome to keep same population size
         children.add( crossover(genomes.get(0), genomes.get(genomes.size()-1)) );
-
-        // Compensate for oversized genomes
-        /*
-        for (int i = 1; i < deleted; i++)
-            children.add( crossover(genomes.get(i-1), genomes.get(i)) );
-        */
 
         // Get rep from genomes to guide next generation speciation
         updateRep();
@@ -153,12 +118,10 @@ public class Species {
         // Replace pop with next generation
         genomes = children;
 
-        // Find new representative from children
-        //updateRep();
-
         return genomes;
     }
 
+    // Find new representative for species
     public Genome updateRep () {
         for ( Genome g : genomes )
             if (adjFitness(g) < adjFitness(representative))
